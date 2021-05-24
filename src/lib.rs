@@ -100,6 +100,7 @@ impl ElectrsD {
             Stdio::null()
         };
 
+        eprintln!("args: {:?}", args);
         let process = Command::new(exe).args(args).stderr(view_stderr).spawn()?;
 
         let client = loop {
