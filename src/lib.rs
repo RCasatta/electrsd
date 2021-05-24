@@ -63,9 +63,6 @@ impl ElectrsD {
         args.push("--network");
         args.push("regtest");
 
-        args.push("--bulk-index-threads");
-        args.push("1");
-
         args.push("--cookie-file");
         let cookie_file = format!("{}", bitcoind.cookie_file.display());
         args.push(&cookie_file);
