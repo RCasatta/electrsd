@@ -10,7 +10,7 @@ jobs:
     container: bitcoindevkit/electrs
     env:
       BITCOIND_EXE: /root/bitcoind
-      ELECTRSD_EXE: /root/electrsd
+      ELECTRSD_EXE: /root/electrs
     steps:
       - name: Checkout
         uses: actions/checkout@v2
