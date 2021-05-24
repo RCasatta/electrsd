@@ -1,12 +1,13 @@
 [package]
 name = "electrsd"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
-description = "just a placeholder for now"
+description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
+documentation = "https://docs.rs/elecrtsd/"
 license = "MIT"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+bitcoind = { version = "0.6.0" }
+electrum-client = { version="0.7.0", default-features = false }

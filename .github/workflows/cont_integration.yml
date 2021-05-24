@@ -1,0 +1,32 @@
+on: [push, pull_request]
+
+name: CI
+
+jobs:
+
+  test-electrs:
+    name: Test Electrs
+    runs-on: ubuntu-20.04
+    env:
+      CARGO_TERM_COLOR: always
+      BITCOIN_VER: 0.21.0
+      ELECTRS_EXE: electrs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: electrs
+      - run: electrs --help
+      - run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
+      - run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose
