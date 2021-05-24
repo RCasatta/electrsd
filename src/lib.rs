@@ -159,9 +159,9 @@ mod test {
     #[test]
     fn test_electrsd() {
         let bitcoind_exe = env::var("BITCOIND_EXE").expect("BITCOIND_EXE env var must be set");
-        let electrsd_exe = env::var("ELECTRSD_EXE").expect("ELECTRSD_EXE env var must be set");
+        let electrs_exe = env::var("ELECTRS_EXE").expect("ELECTRS_EXE env var must be set");
         let bitcoind = BitcoinD::with_args(bitcoind_exe, vec![], true, bitcoind::P2P::No).unwrap();
-        let electrsd = ElectrsD::new(electrsd_exe, bitcoind, true, false).unwrap();
+        let electrsd = ElectrsD::new(electrs_exe, bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 0);
         electrsd
