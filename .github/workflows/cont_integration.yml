@@ -10,7 +10,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       BITCOIN_VER: 0.21.0
-      ELECTRS_EXE: electrs
+      ELECTRS_VER: 0.8.10
     strategy:
       matrix:
         features: ["", "--features trigger"]
@@ -18,18 +18,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Cache
+        id: cache-step
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/git
+            ~/.cargo/registry
+            target
+            bitcoin-${{ env.BITCOIN_VER }}
+          key: ${{ runner.os }}-test-electrsd-${{ env.BITCOIN_VER }}-${{ env.ELECTRS_VER }}-${{ hashFiles('Cargo.toml','Cargo.lock') }}
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
+      - name: Set ELECTRS_EXE env
+        run: echo "ELECTRS_EXE=$HOME/.cargo/bin/electrs" >> $GITHUB_ENV
+      - name: Install electrs
+        if: steps.cache-step.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
         with:
           command: install
-          args: electrs
-      - run: electrs --help
-      - run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
-      - run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
-      - uses: actions-rs/cargo@v1
+          args: electrs --version ${{ env.ELECTRS_VER }}
+      - name: Show electrs options
+        run: electrs --help
+      - name: Set BITCOIND_EXE env
+        run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
+      - name: Install bitcoind
+        if: steps.cache-step.outputs.cache-hit != 'true'
+        run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
+      - name: Test electrsd
+        uses: actions-rs/cargo@v1
         with:
           command: test
           args: --verbose ${{ matrix.features }}
