@@ -9,5 +9,5 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.6.0" }
+bitcoind = { version = "0.7.0" }
 electrum-client = { version="0.7.0", default-features = false }

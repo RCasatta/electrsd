@@ -68,7 +68,8 @@ impl ElectrsD {
         args.push(&cookie_file);
 
         args.push("--daemon-rpc-addr");
-        args.push(&bitcoind.rpc_url[7..]);
+        let rpc_socket = bitcoind.rpc_socket.to_string();
+        args.push(&rpc_socket);
 
         args.push("--jsonrpc-import");
 
