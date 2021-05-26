@@ -15,3 +15,8 @@ assert_eq!(header.height, 0);
   * electrsd use a temporary directory as db dir
   * A free port is asked to the OS (a very low probability race condition is still possible) 
   * the process is killed when the struct goes out of scope no matter how the test finishes
+
+## Why not using it as a library?
+
+Launching a pre-installed (in a docker or cached) executable avoid building
+

@@ -10,8 +10,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       BITCOIN_VER: 0.21.0
-      ELECTRS_EXE: electrs
-      TEST_ENV: $HOME/.cargo/bin/electrs
+      ELECTRS_EXE: $HOME/.cargo/bin/electrs
 
     steps:
       - run: echo $TEST_ENV
@@ -25,7 +24,7 @@ jobs:
         with:
           command: install
           args: electrs
-      - run: electrs --help
+      - run: ${{ env.ELECTRS_EXE }} --help
       - run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
       - run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
       - uses: actions-rs/cargo@v1
