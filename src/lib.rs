@@ -35,12 +35,19 @@ pub struct ElectrsD {
 pub enum Error {
     /// Wrapper of io Error
     Io(std::io::Error),
+
     /// Wrapper of bitcoind Error
     Bitcoind(bitcoind::Error),
+
     /// Wrapper of electrum_client Error
     ElectrumClient(electrum_client::Error),
+
     /// Wrapper of bitcoincore_rpc Error
     BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
+
+    #[cfg(feature = "trigger")]
+    /// Wrapper of nix Error
+    Nix(nix::Error),
 }
 
 impl ElectrsD {
@@ -117,6 +124,15 @@ impl ElectrsD {
             esplora_url,
         })
     }
+
+    #[cfg(feature = "trigger")]
+    /// triggers electrs sync by sending the `SIGUSR1` signal, useful to call after a block for example
+    pub fn trigger(&self) -> Result<(), Error> {
+        Ok(nix::sys::signal::kill(
+            nix::unistd::Pid::from_raw(self.process.id() as i32),
+            nix::sys::signal::SIGUSR1,
+        )?)
+    }
 }
 
 impl Drop for ElectrsD {
@@ -149,6 +165,13 @@ impl From<bitcoind::bitcoincore_rpc::Error> for Error {
     }
 }
 
+#[cfg(feature = "trigger")]
+impl From<nix::Error> for Error {
+    fn from(e: nix::Error) -> Self {
+        Error::Nix(e)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::ElectrsD;
@@ -175,6 +198,10 @@ mod test {
             .client
             .generate_to_address(101, &address)
             .unwrap();
+
+        #[cfg(feature = "trigger")]
+        electrsd.trigger().unwrap();
+
         let header = loop {
             std::thread::sleep(std::time::Duration::from_secs(1));
             let header = electrsd.client.block_headers_subscribe().unwrap();
