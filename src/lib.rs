@@ -56,9 +56,7 @@ impl ElectrsD {
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
-        let mut args = vec![];
-
-        args.push("-vvv");
+        let mut args = vec!["-vvv"];
 
         let _db_dir = TempDir::new()?;
         let db_dir = format!("{}", _db_dir.path().display());
@@ -92,6 +90,7 @@ impl ElectrsD {
             esplora_url_string = format!("0.0.0.0:{}", get_available_port()?);
             args.push("--http-addr");
             args.push(&esplora_url_string);
+            #[allow(clippy::redundant_clone)]
             Some(esplora_url_string.clone())
         } else {
             None
@@ -114,8 +113,8 @@ impl ElectrsD {
         };
 
         Ok(ElectrsD {
-            client,
             process,
+            client,
             _db_dir,
             electrum_url,
             esplora_url,
