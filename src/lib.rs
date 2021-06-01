@@ -246,11 +246,9 @@ mod test {
         };
         assert_eq!(header.height, 101);
 
-
         // launch another instance to check there are no fixed port used
         let electrsd = ElectrsD::new(electrs_exe.clone(), &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 101);
-
     }
 }
