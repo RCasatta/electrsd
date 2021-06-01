@@ -18,8 +18,9 @@ log = "0.4.14"
 env_logger = "0.8.3"
 
 [features]
+default = ["use-monitoring"] # mandatory in electrs <= 0.8.10
 trigger = ["nix"]
 
 # electrs features
-p2p-enabled = [] # requires electrs version >= 0.8.11
-monitoring-disabled = [] # requires electrs version >= 0.8.11 built without default features
+use-p2p = [] # required in electrs version > 0.8.10
+use-monitoring = [] # required in electrs version <= 0.8.10 built without default features

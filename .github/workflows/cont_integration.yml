@@ -13,7 +13,7 @@ jobs:
       ELECTRS_VER: 0.8.10
     strategy:
       matrix:
-        features: ["", "--features trigger"]
+        features: ["--features use-p2p", "--features use-p2p,trigger"]
 
     steps:
       - name: Checkout
@@ -48,7 +48,7 @@ jobs:
         if: steps.cache-step.outputs.cache-hit != 'true'
         run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
       - name: Test electrsd
-        run: RUST_LOG=electrs=debug cargo test --verbose ${{ matrix.features }}
+        run: RUST_LOG=electrs=debug cargo test --verbose --no-default-features ${{ matrix.features }}
 
   cosmetics:
     runs-on: ubuntu-20.04

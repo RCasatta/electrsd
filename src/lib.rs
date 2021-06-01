@@ -95,9 +95,9 @@ impl ElectrsD {
         let rpc_socket = bitcoind.config.rpc_socket.to_string();
         args.push(&rpc_socket);
 
-        #[cfg(feature = "p2p-enabled")]
+        #[cfg(feature = "use-p2p")]
         let p2p_socket;
-        #[cfg(feature = "p2p-enabled")]
+        #[cfg(feature = "use-p2p")]
         {
             p2p_socket = bitcoind
                 .config
@@ -108,9 +108,9 @@ impl ElectrsD {
             args.push(&p2p_socket);
         }
 
-        #[cfg(not(feature = "monitoring-disabled"))]
+        #[cfg(feature = "use-monitoring")]
         let monitoring_address;
-        #[cfg(not(feature = "monitoring-disabled"))]
+        #[cfg(feature = "use-monitoring")]
         {
             monitoring_address = format!("0.0.0.0:{}", get_available_port()?);
             args.push("--monitoring-addr");
