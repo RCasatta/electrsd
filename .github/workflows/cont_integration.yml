@@ -64,3 +64,23 @@ jobs:
         run: cargo fmt -- --check
       - name: clippy
         run: cargo clippy -- -D warnings
+
+
+  test-electrs-container:
+    name: Test Electrs with container
+    runs-on: ubuntu-16.04
+    container: bitcoindevkit/electrs:0.4.0
+    env:
+      BITCOIND_EXE: /root/bitcoind
+      ELECTRS_EXE: /root/electrs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Bitcoind version
+        run: ${BITCOIND_EXE} -version
+      - name: Electrs help
+        run: ${ELECTRS_EXE} --help
+      - name: Install rustup  # cargo action doesn't work inside container
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Test
+        run: $HOME/.cargo/bin/cargo test --verbose --no-default-features --features use-p2p -- --nocapture
