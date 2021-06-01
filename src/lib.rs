@@ -19,8 +19,6 @@ use std::time::Duration;
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
     process: Child,
-    /// bitcoind process connected to this electrs
-    pub bitcoind: BitcoinD,
     /// Electrum client connected to the electrs process
     pub client: RawClient<ElectrumPlaintextStream>,
     /// DB directory, where electrs store indexes. It is kept in the struct so that
@@ -61,7 +59,7 @@ impl ElectrsD {
     /// One block will be generated in bitcoind if in IBD
     pub fn new<S: AsRef<OsStr>>(
         exe: S,
-        bitcoind: BitcoinD,
+        bitcoind: &BitcoinD,
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
@@ -90,22 +88,40 @@ impl ElectrsD {
         args.push("regtest");
 
         args.push("--cookie-file");
-        let cookie_file = format!("{}", bitcoind.cookie_file.display());
+        let cookie_file = format!("{}", bitcoind.config.cookie_file.display());
         args.push(&cookie_file);
 
         args.push("--daemon-rpc-addr");
-        let rpc_socket = bitcoind.rpc_socket.to_string();
+        let rpc_socket = bitcoind.config.rpc_socket.to_string();
         args.push(&rpc_socket);
 
-        let p2p_socket = bitcoind
-            .p2p_socket
-            .ok_or(Error::BitcoinNodeHasNoP2P)?
-            .to_string();
-        args.push("--daemon-p2p-addr");
-        args.push(&p2p_socket);
+        #[cfg(feature = "p2p-enabled")]
+        let p2p_socket;
+        #[cfg(feature = "p2p-enabled")]
+        {
+            p2p_socket = bitcoind
+                .config
+                .p2p_socket
+                .ok_or(Error::BitcoinNodeHasNoP2P)?
+                .to_string();
+            args.push("--daemon-p2p-addr");
+            args.push(&p2p_socket);
+        }
 
-        //args.push("--daemon-dir");
-        //let rpc_socket = bitcoind._work_dir.to_string();
+        #[cfg(not(feature = "monitoring-disabled"))]
+        let monitoring_address;
+        #[cfg(not(feature = "monitoring-disabled"))]
+        {
+            monitoring_address = format!("0.0.0.0:{}", get_available_port()?);
+            args.push("--monitoring-addr");
+            args.push(&monitoring_address);
+        }
+
+        // `--daemon-dir`  isn't necessary since we use `--jsonrpc-import` however better to see the
+        // correct value in the logs and it may be used in the future
+        args.push("--daemon-dir");
+        let daemon_dir = format!("{}", bitcoind.config.datadir.display());
+        args.push(&daemon_dir);
 
         args.push("--jsonrpc-import");
 
@@ -142,7 +158,6 @@ impl ElectrsD {
 
         Ok(ElectrsD {
             process,
-            bitcoind,
             client,
             _db_dir,
             electrum_url,
@@ -213,12 +228,11 @@ mod test {
         let electrs_exe = env::var("ELECTRS_EXE").expect("ELECTRS_EXE env var must be set");
         let bitcoind =
             BitcoinD::with_args(bitcoind_exe.clone(), vec![], true, bitcoind::P2P::Yes).unwrap();
-        let electrsd = ElectrsD::new(electrs_exe.clone(), bitcoind, true, false).unwrap();
+        let electrsd = ElectrsD::new(electrs_exe.clone(), &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let node_client = &electrsd.bitcoind.client;
-        let address = node_client.get_new_address(None, None).unwrap();
-        node_client.generate_to_address(100, &address).unwrap();
+        let address = bitcoind.client.get_new_address(None, None).unwrap();
+        bitcoind.client.generate_to_address(100, &address).unwrap();
 
         #[cfg(feature = "trigger")]
         electrsd.trigger().unwrap();
@@ -232,10 +246,11 @@ mod test {
         };
         assert_eq!(header.height, 101);
 
+
         // launch another instance to check there are no fixed port used
-        let bitcoind = BitcoinD::with_args(bitcoind_exe, vec![], true, bitcoind::P2P::Yes).unwrap();
-        let electrsd = ElectrsD::new(electrs_exe.clone(), bitcoind, true, false).unwrap();
+        let electrsd = ElectrsD::new(electrs_exe.clone(), &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
-        assert_eq!(header.height, 1);
+        assert_eq!(header.height, 101);
+
     }
 }
