@@ -49,3 +49,18 @@ jobs:
         run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
       - name: Test electrsd
         run: RUST_LOG=electrs=debug cargo test --verbose ${{ matrix.features }}
+
+  cosmetics:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt, clippy
+      - name: fmt
+        run: cargo fmt -- --check
+      - name: clippy
+        run: cargo clippy -- -D warnings
