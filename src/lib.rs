@@ -87,9 +87,11 @@ impl ElectrsD {
         args.push("--network");
         args.push("regtest");
 
+        /*
         args.push("--cookie-file");
         let cookie_file = format!("{}", bitcoind.config.cookie_file.display());
         args.push(&cookie_file);
+        */
 
         args.push("--daemon-rpc-addr");
         let rpc_socket = bitcoind.config.rpc_socket.to_string();
