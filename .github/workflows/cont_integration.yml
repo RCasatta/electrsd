@@ -83,4 +83,4 @@ jobs:
       - name: Install rustup  # cargo action doesn't work inside container
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - name: Test
-        run: $HOME/.cargo/bin/cargo test --verbose --no-default-features --features use-p2p -- --nocapture
+        run: $HOME/.cargo/bin/cargo test --verbose --no-default-features -- --nocapture
