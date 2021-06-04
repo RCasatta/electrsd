@@ -9,7 +9,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { git = "https://github.com/RCasatta/bitcoind", rev="ff0792a3c8317195a65662866727145fde577348" }
+bitcoind = "0.10.0"
 electrum-client = { version="0.7.0", default-features = false }
 nix = { version="0.20.0", optional = true }
 log = "0.4.14"
