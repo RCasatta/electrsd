@@ -9,9 +9,18 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.7.0" }
+bitcoind = "0.10.0"
 electrum-client = { version="0.7.0", default-features = false }
 nix = { version="0.20.0", optional = true }
+log = "0.4.14"
+
+[dev-dependencies]
+env_logger = "0.8.3"
 
 [features]
+default = ["use-monitoring"] # mandatory in electrs <= 0.8.10
 trigger = ["nix"]
+
+# electrs features
+use-p2p = [] # required in electrs version > 0.8.10
+use-monitoring = [] # required in electrs version <= 0.8.10 built without default features
