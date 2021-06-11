@@ -56,10 +56,16 @@ impl ElectrsD {
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
-        let mut args = vec!["-vvv"];
-
         let _db_dir = TempDir::new()?;
         let db_dir = format!("{}", _db_dir.path().display());
+
+        // Explicitly specify an empty config, otherwise it may load system configuration
+        let empty_config = _db_dir.path().to_path_buf().join("config.toml");
+        let empty_config_string = format!("{}", empty_config.display());
+        std::fs::File::create(empty_config)?;
+
+        let mut args = vec!["--conf", &empty_config_string, "-vvv"];
+
         args.push("--db-dir");
         args.push(&db_dir);
 

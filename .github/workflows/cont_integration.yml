@@ -84,10 +84,6 @@ jobs:
         run: ${BITCOIND_EXE} -version
       - name: Electrs help
         run: ${ELECTRS_EXE} --help
-      - name: Delete default config
-        run: rm /etc/electrs/config.toml
-      - name: env
-        run: env
       - name: Install rustup  # cargo action doesn't work inside container
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - name: Test
