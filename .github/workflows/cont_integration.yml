@@ -39,7 +39,7 @@ jobs:
         run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs/target/release/electrs" >> $GITHUB_ENV
       - name: Build electrs
         if: steps.cache-step.outputs.cache-hit != 'true'
-        run: git clone https://github.com/romanz/electrs && cd electrs && git checkout df513cfb18297d3d76097bb62dba93676bbf9a94 && cargo build --release --no-default-features
+        run: git clone https://github.com/romanz/electrs && cd electrs && git checkout p2p && cargo build --release --no-default-features
       - name: Show electrs options
         run: ${{ env.ELECTRS_EXE }} --help
       - name: Set BITCOIND_EXE env
@@ -72,15 +72,18 @@ jobs:
     container: bitcoindevkit/electrs:0.4.0
     env:
       BITCOIND_EXE: /root/bitcoind
-      ELECTRS_EXE: /root/electrs
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Bitcoind version
         run: ${BITCOIND_EXE} -version
-      - name: Electrs help
-        run: ${ELECTRS_EXE} --help
       - name: Install rustup  # cargo action doesn't work inside container
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Build electrs
+        run: apt install -y git clang llvm && git clone https://github.com/romanz/electrs && cd electrs && git checkout p2p && $HOME/.cargo/bin/cargo build --release --no-default-features
+      - name: Set ELECTRS_EXE env
+        run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs/target/release/electrs" >> $GITHUB_ENV
+      - name: Electrs Help
+        run: ${ELECTRS_EXE} --help
       - name: Test
         run: $HOME/.cargo/bin/cargo test --verbose --no-default-features -- --nocapture
