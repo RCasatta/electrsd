@@ -17,8 +17,6 @@ use std::time::Duration;
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
     process: Child,
-    /// bitcoind process connected to this electrs
-    pub bitcoind: BitcoinD,
     /// Electrum client connected to the electrs process
     pub client: RawClient<ElectrumPlaintextStream>,
     /// DB directory, where electrs store indexes. It is kept in the struct so that
@@ -54,7 +52,7 @@ impl ElectrsD {
     /// Create a new electrs process connected with the given bitcoind
     pub fn new<S: AsRef<OsStr>>(
         exe: S,
-        bitcoind: BitcoinD,
+        bitcoind: &BitcoinD,
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
@@ -71,11 +69,11 @@ impl ElectrsD {
         args.push("regtest");
 
         args.push("--cookie-file");
-        let cookie_file = format!("{}", bitcoind.cookie_file.display());
+        let cookie_file = format!("{}", bitcoind.params.cookie_file.display());
         args.push(&cookie_file);
 
         args.push("--daemon-rpc-addr");
-        let rpc_socket = bitcoind.rpc_socket.to_string();
+        let rpc_socket = bitcoind.params.rpc_socket.to_string();
         args.push(&rpc_socket);
 
         args.push("--jsonrpc-import");
@@ -117,7 +115,6 @@ impl ElectrsD {
 
         Ok(ElectrsD {
             client,
-            bitcoind,
             process,
             _db_dir,
             electrum_url,
@@ -176,7 +173,7 @@ impl From<nix::Error> for Error {
 mod test {
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
-    use bitcoind::BitcoinD;
+    use bitcoind::{BitcoinD, Conf};
     use electrum_client::ElectrumApi;
     use std::env;
 
@@ -184,20 +181,16 @@ mod test {
     fn test_electrsd() {
         let bitcoind_exe = env::var("BITCOIND_EXE").expect("BITCOIND_EXE env var must be set");
         let electrs_exe = env::var("ELECTRS_EXE").expect("ELECTRS_EXE env var must be set");
-        let bitcoind = BitcoinD::with_args(bitcoind_exe, vec![], true, bitcoind::P2P::No).unwrap();
-        let electrsd = ElectrsD::new(electrs_exe, bitcoind, true, false).unwrap();
+        let conf = Conf {
+            view_stdout: true,
+            ..Default::default()
+        };
+        let bitcoind = BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
+        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 0);
-        let address = electrsd
-            .bitcoind
-            .client
-            .get_new_address(None, None)
-            .unwrap();
-        electrsd
-            .bitcoind
-            .client
-            .generate_to_address(101, &address)
-            .unwrap();
+        let address = bitcoind.client.get_new_address(None, None).unwrap();
+        bitcoind.client.generate_to_address(101, &address).unwrap();
 
         #[cfg(feature = "trigger")]
         electrsd.trigger().unwrap();
@@ -209,6 +202,11 @@ mod test {
                 break header;
             }
         };
+        assert_eq!(header.height, 101);
+
+        // launch another instance to check there are no fixed port used
+        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
+        let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 101);
     }
 }
