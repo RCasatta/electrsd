@@ -1,0 +1,61 @@
+on:
+  workflow_dispatch:
+
+name: Build electrs
+
+jobs:
+
+  build-electrs:
+    name: Build Electrs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, macos-10.15 ]
+    env:
+      ELECTRS_TAG: "v0.8.10"
+
+    steps:
+      - name: Check out Electrs
+        uses: actions/checkout@master
+        with:
+          repository: romanz/electrs
+          ref: ${{ env.ELECTRS_TAG }}
+      - name: Build electrs
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Upload libs
+        uses: actions/upload-artifact@v2
+        with:
+          name: electrs_${{ matrix.os }}_${{ env.ELECTRS_TAG }}
+          path: target/release/electrs
+
+
+  build-electrs-esplora:
+    name: Build Electrs Esplora
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, macos-10.15 ]
+    env:
+      ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
+
+    steps:
+      - name: Check out Electrs
+        uses: actions/checkout@master
+        with:
+          repository: Blockstream/electrs
+          ref: ${{ env.ELECTRS_COMMIT }}
+      - name: Build electrs
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Upload libs
+        uses: actions/upload-artifact@v2
+        with:
+          name: electrs_esplora_${{ matrix.os }}_${{ env.ELECTRS_COMMIT }}
+          path: target/release/electrs
