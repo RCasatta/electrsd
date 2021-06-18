@@ -1,0 +1,24 @@
+on: [workflow_dispatch]
+
+name: Build electrs
+
+jobs:
+
+  build-electrs-linux:
+    name: Build Electrs
+    runs-on: ubuntu-20.04
+    env:
+      ELECTRS_VER: "0.8.10"
+
+    steps:
+      - name: Install electrs
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: electrs --version ${{ env.ELECTRS_VER }}
+
+      - name: Upload libs
+        uses: actions/upload-artifact@v2
+        with:
+          name: electrs_${{ env.RUNNER_OS }}_${{ env.ELECTRS_VER }}
+          path: ~/cargo/bin/electrs
