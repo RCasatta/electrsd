@@ -14,6 +14,9 @@ use std::ffi::OsStr;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
+// re-export bitcoind
+pub use bitcoind;
+
 /// Struct representing the bitcoind process with related information
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
