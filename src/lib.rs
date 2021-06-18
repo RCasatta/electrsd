@@ -6,6 +6,7 @@
 //! Utility to run a regtest electrsd process, useful in integration testing environment
 //!
 
+use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
@@ -56,6 +57,20 @@ impl ElectrsD {
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
+        if bitcoind
+            .client
+            .get_blockchain_info()?
+            .initial_block_download
+        {
+            // electrum will remain idle until bitcoind is in IBD
+            // bitcoind will remain in IBD if doesn't see a block from a long time, thus adding a block
+            let node_address = bitcoind.client.get_new_address(None, None).unwrap();
+            bitcoind
+                .client
+                .generate_to_address(1, &node_address)
+                .unwrap();
+        }
+
         let mut args = vec!["-vvv"];
 
         let _db_dir = TempDir::new()?;
@@ -66,9 +81,26 @@ impl ElectrsD {
         args.push("--network");
         args.push("regtest");
 
-        args.push("--cookie-file");
-        let cookie_file = format!("{}", bitcoind.params.cookie_file.display());
-        args.push(&cookie_file);
+        #[cfg(not(feature = "legacy"))]
+        let cookie_file;
+        #[cfg(not(feature = "legacy"))]
+        {
+            args.push("--cookie-file");
+            cookie_file = format!("{}", bitcoind.params.cookie_file.display());
+            args.push(&cookie_file);
+        }
+
+        #[cfg(feature = "legacy")]
+        let mut cookie_value;
+        #[cfg(feature = "legacy")]
+        {
+            use std::io::Read;
+            args.push("--cookie");
+            let mut cookie = std::fs::File::open(&bitcoind.params.cookie_file)?;
+            cookie_value = String::new();
+            cookie.read_to_string(&mut cookie_value)?;
+            args.push(&cookie_value);
+        }
 
         args.push("--daemon-rpc-addr");
         let rpc_socket = bitcoind.params.rpc_socket.to_string();
@@ -187,9 +219,9 @@ mod test {
         let bitcoind = BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
         let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
-        assert_eq!(header.height, 0);
+        assert_eq!(header.height, 1);
         let address = bitcoind.client.get_new_address(None, None).unwrap();
-        bitcoind.client.generate_to_address(101, &address).unwrap();
+        bitcoind.client.generate_to_address(100, &address).unwrap();
 
         #[cfg(feature = "trigger")]
         electrsd.trigger().unwrap();
@@ -197,7 +229,7 @@ mod test {
         let header = loop {
             std::thread::sleep(std::time::Duration::from_secs(1));
             let header = electrsd.client.block_headers_subscribe().unwrap();
-            if header.height > 0 {
+            if header.height > 100 {
                 break header;
             }
         };
