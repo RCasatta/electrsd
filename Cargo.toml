@@ -1,6 +1,6 @@
 [package]
 name = "electrsd"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
@@ -9,10 +9,20 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.11.0" }
+bitcoind = { version = "0.12.0" }
 electrum-client = { version="0.7.0", default-features = false }
 nix = { version="0.20.0", optional = true }
 
 [features]
 trigger = ["nix"]
 legacy = []
+
+bitcoind_0_21_1 = ["bitcoind/0_21_1"]
+bitcoind_0_21_0 = ["bitcoind/0_21_0"]
+bitcoind_0_20_1 = ["bitcoind/0_20_1"]
+bitcoind_0_20_0 = ["bitcoind/0_20_0"]
+bitcoind_0_19_1 = ["bitcoind/0_19_1"]
+bitcoind_0_19_0_1 = ["bitcoind/0_19_0_1"]
+bitcoind_0_18_1 = ["bitcoind/0_18_1"]
+bitcoind_0_18_0 = ["bitcoind/0_18_0"]
+bitcoind_0_17_1 = ["bitcoind/0_17_1"]

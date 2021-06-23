@@ -207,13 +207,13 @@ impl From<nix::Error> for Error {
 mod test {
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
-    use bitcoind::{BitcoinD, Conf};
+    use bitcoind::{downloaded_exe_path, BitcoinD, Conf};
     use electrum_client::ElectrumApi;
     use std::env;
 
     #[test]
     fn test_electrsd() {
-        let bitcoind_exe = env::var("BITCOIND_EXE").expect("BITCOIND_EXE env var must be set");
+        let bitcoind_exe = downloaded_exe_path().unwrap();
         let electrs_exe = env::var("ELECTRS_EXE").expect("ELECTRS_EXE env var must be set");
         let conf = Conf {
             view_stdout: true,

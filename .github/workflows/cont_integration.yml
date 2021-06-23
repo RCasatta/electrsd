@@ -13,11 +13,10 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
-      BITCOIN_VER: 0.21.0
       ELECTRS_VER: electrs_ubuntu-20.04_v0.8.10.zip
     strategy:
       matrix:
-        features: ["", "--features trigger"]
+        features: ["bitcoind_0_21_1", "bitcoind_0_21_1,trigger"]
 
     steps:
       - name: Checkout
@@ -33,15 +32,11 @@ jobs:
         run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs" >> $GITHUB_ENV
       - name: Show electrs options
         run: ${{ env.ELECTRS_EXE }} --help
-      - name: Set BITCOIND_EXE env
-        run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
-      - name: Install bitcoind
-        run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
       - name: Test electrsd
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --verbose ${{ matrix.features }}
+          args: --verbose --features ${{ matrix.features }}
 
 
   test-electrs-esplora:
@@ -49,11 +44,10 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
-      BITCOIN_VER: 0.21.0
       ELECTRS_VER: electrs_esplora_ubuntu-20.04_a33e97e1a1fc63fa9c20a116bb92579bbf43b254.zip
     strategy:
       matrix:
-        features: ["--features legacy"]
+        features: ["bitcoind_0_21_1,legacy"]
 
     steps:
       - name: Checkout
@@ -69,15 +63,11 @@ jobs:
         run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs" >> $GITHUB_ENV
       - name: Show electrs options
         run: ${{ env.ELECTRS_EXE }} --help
-      - name: Set BITCOIND_EXE env
-        run: echo "BITCOIND_EXE=${{ github.workspace }}/bitcoin-${{ env.BITCOIN_VER }}/bin/bitcoind" >> $GITHUB_ENV
-      - name: Install bitcoind
-        run: curl https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VER/bitcoin-$BITCOIN_VER-x86_64-linux-gnu.tar.gz | tar -xvz bitcoin-$BITCOIN_VER/bin/bitcoind
       - name: Test electrsd
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --verbose ${{ matrix.features }}
+          args: --verbose --features ${{ matrix.features }}
 
 
   cosmetics:
