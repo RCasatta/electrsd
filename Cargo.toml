@@ -12,10 +12,22 @@ edition = "2018"
 bitcoind = { version = "0.12.0" }
 electrum-client = { version="0.7.0", default-features = false }
 nix = { version="0.20.0", optional = true }
+dirs-next = "2.0.0"
+
+[dev-dependencies]
+env_logger = "0.8"
+
+[build-dependencies]
+bitcoin_hashes = "0.9"
+zip = "0.5"
+ureq = "2.1"
 
 [features]
 trigger = ["nix"]
 legacy = []
+
+esplora_a33e97e1 = []
+electrs_0_8_10 = []
 
 bitcoind_0_21_1 = ["bitcoind/0_21_1"]
 bitcoind_0_21_0 = ["bitcoind/0_21_0"]

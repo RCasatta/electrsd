@@ -2,10 +2,6 @@ on: [push, pull_request]
 
 name: CI
 
-env:
-  BITCOIN_VER: 0.21.0
-  ELECTRS_RELEASE_URL: https://github.com/RCasatta/electrsd/releases/download/release_0.3.0
-
 jobs:
 
   test-electrs:
@@ -13,10 +9,9 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
-      ELECTRS_VER: electrs_ubuntu-20.04_v0.8.10.zip
     strategy:
       matrix:
-        features: ["bitcoind_0_21_1", "bitcoind_0_21_1,trigger"]
+        features: ["bitcoind_0_21_1,electrs_0_8_10", "bitcoind_0_21_1,trigger,electrs_0_8_10"]
 
     steps:
       - name: Checkout
@@ -26,12 +21,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Download electrs
-        run: wget ${{ env.ELECTRS_RELEASE_URL }}/${{ env.ELECTRS_VER }} && unzip ${{ env.ELECTRS_VER }} && chmod +x ./electrs
-      - name: Set ELECTRS_EXE env
-        run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs" >> $GITHUB_ENV
-      - name: Show electrs options
-        run: ${{ env.ELECTRS_EXE }} --help
       - name: Test electrsd
         uses: actions-rs/cargo@v1
         with:
@@ -44,10 +33,9 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
-      ELECTRS_VER: electrs_esplora_ubuntu-20.04_a33e97e1a1fc63fa9c20a116bb92579bbf43b254.zip
     strategy:
       matrix:
-        features: ["bitcoind_0_21_1,legacy"]
+        features: ["bitcoind_0_21_1,legacy,esplora_a33e97e1"]
 
     steps:
       - name: Checkout
@@ -57,12 +45,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Download electrs
-        run: wget ${{ env.ELECTRS_RELEASE_URL }}/${{ env.ELECTRS_VER }} && unzip ${{ env.ELECTRS_VER }} && chmod +x ./electrs
-      - name: Set ELECTRS_EXE env
-        run: echo "ELECTRS_EXE=${{ github.workspace }}/electrs" >> $GITHUB_ENV
-      - name: Show electrs options
-        run: ${{ env.ELECTRS_EXE }} --help
       - name: Test electrsd
         uses: actions-rs/cargo@v1
         with:

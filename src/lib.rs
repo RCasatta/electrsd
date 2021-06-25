@@ -6,6 +6,8 @@
 //! Utility to run a regtest electrsd process, useful in integration testing environment
 //!
 
+mod versions;
+
 use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
@@ -203,18 +205,32 @@ impl From<nix::Error> for Error {
     }
 }
 
+/// Provide the electrs executable path if a version feature has been specified
+pub fn downloaded_exe_path() -> Option<String> {
+    // CARGO_HOME surely available only in `build.rs` here we need to get from home_dir
+    if versions::HAS_FEATURE {
+        Some(format!(
+            "{}/.cargo/electrs/{}/electrs",
+            dirs_next::home_dir()?.display(),
+            versions::electrs_name(),
+        ))
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
-    use bitcoind::{downloaded_exe_path, BitcoinD, Conf};
+    use bitcoind::{BitcoinD, Conf};
     use electrum_client::ElectrumApi;
     use std::env;
 
     #[test]
     fn test_electrsd() {
-        let bitcoind_exe = downloaded_exe_path().unwrap();
-        let electrs_exe = env::var("ELECTRS_EXE").expect("ELECTRS_EXE env var must be set");
+        let (bitcoind_exe, electrs_exe) = init();
+        dbg!(&electrs_exe);
         let conf = Conf {
             view_stdout: true,
             ..Default::default()
@@ -242,5 +258,24 @@ mod test {
         let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 101);
+    }
+
+    fn init() -> (String, String) {
+        let _ = env_logger::try_init();
+        let bitcoind_exe_path = if let Some(downloaded_exe_path) = bitcoind::downloaded_exe_path() {
+            downloaded_exe_path
+        } else {
+            env::var("BITCOIND_EXE").expect(
+                "when no version feature is specified, you must specify BITCOIND_EXE env var",
+            )
+        };
+        let electrs_exe_path = if let Some(downloaded_exe_path) = crate::downloaded_exe_path() {
+            downloaded_exe_path
+        } else {
+            env::var("ELECTRS_EXE").expect(
+                "when no version feature is specified, you must specify ELECTRS_EXE env var",
+            )
+        };
+        (bitcoind_exe_path, electrs_exe_path)
     }
 }
