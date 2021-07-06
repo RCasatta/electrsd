@@ -8,6 +8,7 @@
 
 mod versions;
 
+use bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value;
 use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
@@ -62,17 +63,18 @@ impl ElectrsD {
         view_stderr: bool,
         http_enabled: bool,
     ) -> Result<ElectrsD, Error> {
-        if bitcoind
-            .client
-            .get_blockchain_info()?
-            .initial_block_download
+        let response = bitcoind.client.call::<Value>("getblockchaininfo", &[])?;
+        if response
+            .get("initialblockdownload")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
         {
             // electrum will remain idle until bitcoind is in IBD
             // bitcoind will remain in IBD if doesn't see a block from a long time, thus adding a block
-            let node_address = bitcoind.client.get_new_address(None, None).unwrap();
+            let node_address = bitcoind.client.call::<Value>("getnewaddress", &[])?;
             bitcoind
                 .client
-                .generate_to_address(1, &node_address)
+                .call::<Value>("generatetoaddress", &[1.into(), node_address.into()])
                 .unwrap();
         }
 
