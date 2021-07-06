@@ -20,6 +20,43 @@ use std::time::Duration;
 // re-export bitcoind
 pub use bitcoind;
 
+/// Electrs configuration parameters, implements a convenient [Default] for most common use.
+///
+/// Default values:
+/// ```no_run
+/// electrsd::Conf {
+///     args: vec!["-vvv"],
+///     view_stderr: false,
+///     http_enabled: false,
+///     network: "regtest",
+/// };
+/// ```
+pub struct Conf<'a> {
+    /// Electrsd command line arguments
+    /// note that `db-dir`, `cookie`, `cookie-file`, `daemon-rpc-addr`, `jsonrpc-import`, `electrum-rpc-addr`, `monitoring-addr`, `http-addr`  cannot be used cause they are automatically initialized.
+    pub args: Vec<&'a str>,
+
+    /// if `true` electrsd log output will not be suppressed
+    pub view_stderr: bool,
+
+    /// if `true` electrsd exposes an esplora endpoint
+    pub http_enabled: bool,
+
+    /// Must match bitcoind network
+    pub network: &'a str,
+}
+
+impl Default for Conf<'_> {
+    fn default() -> Self {
+        Conf {
+            args: vec!["-vvv"],
+            view_stderr: false,
+            http_enabled: false,
+            network: "regtest",
+        }
+    }
+}
+
 /// Struct representing the bitcoind process with related information
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
@@ -56,12 +93,16 @@ pub enum Error {
 }
 
 impl ElectrsD {
-    /// Create a new electrs process connected with the given bitcoind
-    pub fn new<S: AsRef<OsStr>>(
+    /// Create a new electrs process connected with the given bitcoind and default args.
+    pub fn new<S: AsRef<OsStr>>(exe: S, bitcoind: &BitcoinD) -> Result<ElectrsD, Error> {
+        ElectrsD::with_conf(exe, bitcoind, &Conf::default())
+    }
+
+    /// Create a new electrs process using given [Conf] connected with the given bitcoind
+    pub fn with_conf<S: AsRef<OsStr>>(
         exe: S,
         bitcoind: &BitcoinD,
-        view_stderr: bool,
-        http_enabled: bool,
+        conf: &Conf,
     ) -> Result<ElectrsD, Error> {
         let response = bitcoind.client.call::<Value>("getblockchaininfo", &[])?;
         if response
@@ -74,11 +115,11 @@ impl ElectrsD {
             let node_address = bitcoind.client.call::<Value>("getnewaddress", &[])?;
             bitcoind
                 .client
-                .call::<Value>("generatetoaddress", &[1.into(), node_address.into()])
+                .call::<Value>("generatetoaddress", &[1.into(), node_address])
                 .unwrap();
         }
 
-        let mut args = vec!["-vvv"];
+        let mut args = conf.args.clone();
 
         let _db_dir = TempDir::new()?;
         let db_dir = format!("{}", _db_dir.path().display());
@@ -86,7 +127,7 @@ impl ElectrsD {
         args.push(&db_dir);
 
         args.push("--network");
-        args.push("regtest");
+        args.push(conf.network);
 
         #[cfg(not(feature = "legacy"))]
         let cookie_file;
@@ -125,7 +166,7 @@ impl ElectrsD {
         args.push(&monitoring);
 
         let esplora_url_string;
-        let esplora_url = if http_enabled {
+        let esplora_url = if conf.http_enabled {
             esplora_url_string = format!("0.0.0.0:{}", get_available_port()?);
             args.push("--http-addr");
             args.push(&esplora_url_string);
@@ -135,7 +176,7 @@ impl ElectrsD {
             None
         };
 
-        let view_stderr = if view_stderr {
+        let view_stderr = if conf.view_stderr {
             Stdio::inherit()
         } else {
             Stdio::null()
@@ -225,7 +266,6 @@ pub fn downloaded_exe_path() -> Option<String> {
 mod test {
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
-    use bitcoind::{BitcoinD, Conf};
     use electrum_client::ElectrumApi;
     use std::env;
 
@@ -233,12 +273,16 @@ mod test {
     fn test_electrsd() {
         let (bitcoind_exe, electrs_exe) = init();
         dbg!(&electrs_exe);
-        let conf = Conf {
+        let conf = bitcoind::Conf {
             view_stdout: true,
             ..Default::default()
         };
-        let bitcoind = BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
-        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
+        let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
+        let electrs_conf = crate::Conf {
+            view_stderr: true,
+            ..Default::default()
+        };
+        let electrsd = ElectrsD::with_conf(&electrs_exe, &bitcoind, &electrs_conf).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
         let address = bitcoind.client.get_new_address(None, None).unwrap();
@@ -257,7 +301,7 @@ mod test {
         assert_eq!(header.height, 101);
 
         // launch another instance to check there are no fixed port used
-        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind, true, false).unwrap();
+        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 101);
     }

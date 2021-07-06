@@ -5,7 +5,7 @@ useful in integration testing environment.
 
 ```
 let bitcoind = bitcoind::BitcoinD::new("/usr/local/bin/bitcoind").unwrap();
-let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrsd", bitcoind, false, false).unwrap();
+let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrsd", bitcoind).unwrap();
 let header = electrsd.client.block_headers_subscribe().unwrap();
 assert_eq!(header.height, 0);
 ```
