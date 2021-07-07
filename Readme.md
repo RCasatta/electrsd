@@ -1,3 +1,6 @@
+[![MIT license](https://img.shields.io/github/license/RCasatta/electrsd)](https://github.com/RCasatta/electrsd/blob/master/LICENSE)
+[![Crates](https://img.shields.io/crates/v/electrsd.svg)](https://crates.io/crates/electrsd)
+
 # Electrsd
 
 Utility to run a regtest electrsd process connected to a given [bitcoind](https://github.com/RCasatta/bitcoind) instance, 
