@@ -13,6 +13,7 @@ use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
+use log::debug;
 use std::ffi::OsStr;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
@@ -182,7 +183,7 @@ impl ElectrsD {
             Stdio::null()
         };
 
-        eprintln!("args: {:?}", args);
+        debug!("args: {:?}", args);
         let process = Command::new(exe).args(args).stderr(view_stderr).spawn()?;
 
         let client = loop {
