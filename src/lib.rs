@@ -273,17 +273,8 @@ mod test {
     #[test]
     fn test_electrsd() {
         let (bitcoind_exe, electrs_exe) = init();
-        dbg!(&electrs_exe);
-        let conf = bitcoind::Conf {
-            view_stdout: true,
-            ..Default::default()
-        };
-        let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
-        let electrs_conf = crate::Conf {
-            view_stderr: true,
-            ..Default::default()
-        };
-        let electrsd = ElectrsD::with_conf(&electrs_exe, &bitcoind, &electrs_conf).unwrap();
+        let bitcoind = bitcoind::BitcoinD::new(&bitcoind_exe).unwrap();
+        let electrsd = ElectrsD::new(&electrs_exe, &bitcoind).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
         let address = bitcoind.client.get_new_address(None, None).unwrap();
