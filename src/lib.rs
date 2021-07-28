@@ -26,7 +26,7 @@ pub use bitcoind;
 /// Default values:
 /// ```no_run
 /// electrsd::Conf {
-///     args: vec!["-vvv"],
+///     args: vec!["-vvv", "--txid-limit=0"],
 ///     view_stderr: false,
 ///     http_enabled: false,
 ///     network: "regtest",
