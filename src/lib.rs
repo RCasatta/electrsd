@@ -268,19 +268,21 @@ mod test {
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
     use electrum_client::ElectrumApi;
+    use log::{debug, log_enabled, Level};
     use std::env;
 
     #[test]
     fn test_electrsd() {
         let (bitcoind_exe, electrs_exe) = init();
-        dbg!(&electrs_exe);
+        debug!("bitcoind: {}", &bitcoind_exe);
+        debug!("electrs: {}", &electrs_exe);
         let conf = bitcoind::Conf {
-            view_stdout: true,
+            view_stdout: log_enabled!(Level::Debug),
             ..Default::default()
         };
         let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
         let electrs_conf = crate::Conf {
-            view_stderr: true,
+            view_stderr: log_enabled!(Level::Debug),
             ..Default::default()
         };
         let electrsd = ElectrsD::with_conf(&electrs_exe, &bitcoind, &electrs_conf).unwrap();
