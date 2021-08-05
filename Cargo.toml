@@ -9,17 +9,17 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.13.0" }
-electrum-client = { version="0.7.0", default-features = false }
-nix = { version="0.20.0", optional = true }
+bitcoind = { version = "0.16.0" }
+electrum-client = { version="0.8.0", default-features = false }
+nix = { version="0.22.0", optional = true }
 dirs-next = "2.0.0"
 log = "0.4"
 
 [dev-dependencies]
-env_logger = "0.8"
+env_logger = "0.9"
 
 [build-dependencies]
-bitcoin_hashes = "0.9"
+bitcoin_hashes = "0.10"
 zip = "0.5"
 ureq = "2.1"
 
