@@ -254,8 +254,8 @@ pub fn downloaded_exe_path() -> Option<String> {
     // CARGO_HOME surely available only in `build.rs` here we need to get from home_dir
     if versions::HAS_FEATURE {
         Some(format!(
-            "{}/.cargo/electrs/{}/electrs",
-            dirs_next::home_dir()?.display(),
+            "{}/electrs/{}/electrs",
+            home::cargo_home().ok()?.display(),
             versions::electrs_name(),
         ))
     } else {

@@ -12,7 +12,7 @@ edition = "2018"
 bitcoind = { version = "0.16.0" }
 electrum-client = { version="0.8.0", default-features = false }
 nix = { version="0.22.0", optional = true }
-dirs-next = "2.0.0"
+home = "0.5.3"
 log = "0.4"
 
 [dev-dependencies]
