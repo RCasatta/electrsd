@@ -2,7 +2,7 @@ use bitcoin_hashes::{sha256, Hash};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Cursor, Read};
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
+use std::path::Path;
 use std::str::FromStr;
 
 include!("src/versions.rs");
@@ -28,12 +28,12 @@ fn main() {
     let download_filename = format!("{}.zip", download_filename_without_extension);
     dbg!(&download_filename);
     let expected_hash = get_expected_sha256(&download_filename).unwrap();
-    let electrs_exe_home = format!("{}/electrs", std::env::var("CARGO_HOME").unwrap());
-    let destination_filename: PathBuf = format!(
-        "{}/{}/electrs",
-        &electrs_exe_home, download_filename_without_extension
-    )
-    .into();
+    let out_dir = std::env::var_os("OUT_DIR").unwrap();
+    let electrs_exe_home = Path::new(&out_dir).join("electrs");
+    let destination_filename = electrs_exe_home
+        .join(&download_filename_without_extension)
+        .join("electrs");
+
     dbg!(&destination_filename);
 
     if !destination_filename.exists() {
