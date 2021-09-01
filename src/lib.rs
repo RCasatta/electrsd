@@ -24,14 +24,15 @@ pub use bitcoind;
 /// Electrs configuration parameters, implements a convenient [Default] for most common use.
 ///
 /// Default values:
-/// ```no_run
-/// electrsd::Conf {
-///     args: vec!["-vvv", "--txid-limit=0"],
-///     view_stderr: false,
-///     http_enabled: false,
-///     network: "regtest",
-/// };
 /// ```
+/// let mut conf = electrsd::Conf::default();
+/// conf.args = vec!["-vvv", "--txid-limit=0"];
+/// conf.view_stderr = false;
+/// conf.http_enabled = false;
+/// conf.network = "regtest";
+/// assert_eq!(conf, electrsd::Conf::default());
+/// ```
+#[derive(Debug, PartialEq)]
 pub struct Conf<'a> {
     /// Electrsd command line arguments
     /// note that `db-dir`, `cookie`, `cookie-file`, `daemon-rpc-addr`, `jsonrpc-import`, `electrum-rpc-addr`, `monitoring-addr`, `http-addr`  cannot be used cause they are automatically initialized.
@@ -50,7 +51,7 @@ pub struct Conf<'a> {
 impl Default for Conf<'_> {
     fn default() -> Self {
         Conf {
-            args: vec!["-vvv"],
+            args: vec!["-vvv", "--txid-limit=0"],
             view_stderr: false,
             http_enabled: false,
             network: "regtest",
