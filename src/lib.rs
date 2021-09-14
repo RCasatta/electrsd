@@ -275,10 +275,8 @@ mod test {
         let (bitcoind_exe, electrs_exe) = init();
         debug!("bitcoind: {}", &bitcoind_exe);
         debug!("electrs: {}", &electrs_exe);
-        let conf = bitcoind::Conf {
-            view_stdout: log_enabled!(Level::Debug),
-            ..Default::default()
-        };
+        let mut conf = bitcoind::Conf::default();
+        conf.view_stdout = log_enabled!(Level::Debug);
         let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
         let electrs_conf = crate::Conf {
             view_stderr: log_enabled!(Level::Debug),

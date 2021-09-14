@@ -9,10 +9,13 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.17.0" }
+bitcoind = { version = "0.18.0" }
 electrum-client = { version="0.8.0", default-features = false }
 nix = { version="0.22.0", optional = true }
 log = "0.4"
+
+[patch.crates-io]
+bitcoind = { git = "https://github.com/notmandatory/bitcoind.git", branch = "add_bitcoin_22_0" }
 
 [dev-dependencies]
 env_logger = "0.9"
@@ -29,6 +32,7 @@ legacy = []
 esplora_a33e97e1 = []
 electrs_0_8_10 = []
 
+bitcoind_22_0 = ["bitcoind/22_0"]
 bitcoind_0_21_1 = ["bitcoind/0_21_1"]
 bitcoind_0_21_0 = ["bitcoind/0_21_0"]
 bitcoind_0_20_1 = ["bitcoind/0_20_1"]
