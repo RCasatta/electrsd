@@ -11,7 +11,7 @@ jobs:
       CARGO_TERM_COLOR: always
     strategy:
       matrix:
-        features: ["bitcoind_0_21_1,electrs_0_8_10", "bitcoind_0_21_1,trigger,electrs_0_8_10"]
+        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,trigger,electrs_0_8_10"]
 
     steps:
       - name: Checkout
@@ -38,7 +38,7 @@ jobs:
       CARGO_TERM_COLOR: always
     strategy:
       matrix:
-        features: ["bitcoind_0_21_1,legacy,esplora_a33e97e1"]
+        features: ["bitcoind_22_0,legacy,esplora_a33e97e1"]
 
     steps:
       - name: Checkout
