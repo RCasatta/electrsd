@@ -27,7 +27,7 @@ jobs:
           command: build
           args: --release
       - name: downcase runner.os
-        run: RUNNER_OS=${{ runner.os }} && echo "RUNNER_OS_LOWER=${RUNNER_OS,,}" >>${GITHUB_ENV}
+        run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
         uses: actions/upload-artifact@v2
         with:
@@ -57,7 +57,7 @@ jobs:
           command: build
           args: --release
       - name: downcase runner.os
-        run: RUNNER_OS=${{ runner.os}} && echo "RUNNER_OS_LOWER=${RUNNER_OS,,}" >>${GITHUB_ENV}
+        run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
         uses: actions/upload-artifact@v2
         with:
