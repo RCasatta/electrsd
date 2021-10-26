@@ -157,7 +157,18 @@ impl ElectrsD {
         let rpc_socket = bitcoind.params.rpc_socket.to_string();
         args.push(&rpc_socket);
 
-        args.push("--jsonrpc-import");
+        let p2p_socket;
+        if cfg!(feature = "electrs_0_9_1") {
+            args.push("--daemon-p2p-addr");
+            p2p_socket = bitcoind
+                .params
+                .p2p_socket
+                .expect("electrs_0_9_1 requires bitcoind with p2p port open")
+                .to_string();
+            args.push(&p2p_socket);
+        } else {
+            args.push("--jsonrpc-import");
+        }
 
         let electrum_url = format!("0.0.0.0:{}", get_available_port()?);
         args.push("--electrum-rpc-addr");
@@ -266,6 +277,7 @@ pub fn downloaded_exe_path() -> Option<String> {
 
 #[cfg(test)]
 mod test {
+    use crate::bitcoind::P2P;
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
     use electrum_client::ElectrumApi;
@@ -279,6 +291,9 @@ mod test {
         debug!("electrs: {}", &electrs_exe);
         let mut conf = bitcoind::Conf::default();
         conf.view_stdout = log_enabled!(Level::Debug);
+        if cfg!(feature = "electrs_0_9_1") {
+            conf.p2p = P2P::Yes;
+        }
         let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
         let electrs_conf = crate::Conf {
             view_stderr: log_enabled!(Level::Debug),

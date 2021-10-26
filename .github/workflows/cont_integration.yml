@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
+      RUST_LOG: debug
     strategy:
       matrix:
         features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1", "bitcoind_22_0,trigger,electrs_0_8_10"]
