@@ -36,15 +36,15 @@ jobs:
 
 
   build-electrs-esplora:
-    name: Build Electrs Esplora
+    name: Electrs Esplora
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-20.04, macos-11 ]
+        features: [ "", "--features liquid" ]
     env:
-      ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
-
+      ELECTRS_COMMIT: "65e20f9e1196c0039d56307b34ea7bcfbe375b99"
     steps:
       - name: Check out Electrs
         uses: actions/checkout@master
@@ -55,11 +55,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release
+          args: --release ${{ matrix.features }}
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
         uses: actions/upload-artifact@v2
         with:
-          name: electrs_${{ env.RUNNER_OS_LOWER }}_esplora_${{ env.ELECTRS_COMMIT }}
+          name: electrs_${{ env.RUNNER_OS_LOWER }}_esplora_${{ env.ELECTRS_COMMIT }}_${{ matrix.features == '' }}
           path: target/release/electrs
