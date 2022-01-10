@@ -333,7 +333,7 @@ mod test {
 
     fn init() -> (String, String) {
         let _ = env_logger::try_init();
-        let bitcoind_exe_path = if let Some(downloaded_exe_path) = bitcoind::downloaded_exe_path() {
+        let bitcoind_exe_path = if let Ok(downloaded_exe_path) = bitcoind::downloaded_exe_path() {
             downloaded_exe_path
         } else {
             env::var("BITCOIND_EXE").expect(
