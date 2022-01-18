@@ -43,7 +43,7 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, macos-11 ]
     env:
-      ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
+      ELECTRS_COMMIT: "703c6a20d52b61a234a18812503bd754d448992a"
 
     steps:
       - name: Check out Electrs
