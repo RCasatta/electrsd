@@ -13,9 +13,9 @@ use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
-use log::debug;
+use log::{debug, error};
 use std::ffi::OsStr;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::Duration;
 
 // re-export bitcoind
@@ -93,6 +93,9 @@ pub enum Error {
     #[cfg(feature = "trigger")]
     /// Wrapper of nix Error
     Nix(nix::Error),
+
+    /// Wrapper of early exit status
+    EarlyExit(ExitStatus),
 }
 
 impl ElectrsD {
@@ -197,9 +200,13 @@ impl ElectrsD {
         };
 
         debug!("args: {:?}", args);
-        let process = Command::new(exe).args(args).stderr(view_stderr).spawn()?;
+        let mut process = Command::new(exe).args(args).stderr(view_stderr).spawn()?;
 
         let client = loop {
+            if let Some(status) = process.try_wait()? {
+                error!("early exit with: {:?}", status);
+                return Err(Error::EarlyExit(status));
+            }
             match RawClient::new(&electrum_url, None) {
                 Ok(client) => break client,
                 Err(_) => std::thread::sleep(Duration::from_millis(500)),
