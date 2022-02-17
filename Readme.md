@@ -3,12 +3,12 @@
 
 # Electrsd
 
-Utility to run a regtest electrsd process connected to a given [bitcoind](https://github.com/RCasatta/bitcoind) instance, 
+Utility to run a regtest [electrs](https://github.com/romanz/electrs/) process connected to a given [bitcoind](https://github.com/RCasatta/bitcoind) instance, 
 useful in integration testing environment.
 
 ```
 let bitcoind = bitcoind::BitcoinD::new("/usr/local/bin/bitcoind").unwrap();
-let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrsd", bitcoind).unwrap();
+let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrs", bitcoind).unwrap();
 let header = electrsd.client.block_headers_subscribe().unwrap();
 assert_eq!(header.height, 0);
 ```
