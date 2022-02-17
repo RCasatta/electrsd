@@ -230,11 +230,16 @@ impl ElectrsD {
             nix::sys::signal::SIGUSR1,
         )?)
     }
+
+    /// terminate the electrs process
+    pub fn kill(&mut self) -> Result<(), Error> {
+        Ok(self.process.kill()?)
+    }
 }
 
 impl Drop for ElectrsD {
     fn drop(&mut self) {
-        let _ = self.process.kill();
+        let _ = self.kill();
     }
 }
 
