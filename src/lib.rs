@@ -306,20 +306,7 @@ mod test {
 
     #[test]
     fn test_electrsd() {
-        let (bitcoind_exe, electrs_exe) = init();
-        debug!("bitcoind: {}", &bitcoind_exe);
-        debug!("electrs: {}", &electrs_exe);
-        let mut conf = bitcoind::Conf::default();
-        conf.view_stdout = log_enabled!(Level::Debug);
-        if cfg!(feature = "electrs_0_9_1") {
-            conf.p2p = P2P::Yes;
-        }
-        let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
-        let electrs_conf = crate::Conf {
-            view_stderr: log_enabled!(Level::Debug),
-            ..Default::default()
-        };
-        let electrsd = ElectrsD::with_conf(&electrs_exe, &bitcoind, &electrs_conf).unwrap();
+        let (electrs_exe, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
         let address = bitcoind.client.get_new_address(None, None).unwrap();
@@ -341,6 +328,34 @@ mod test {
         let electrsd = ElectrsD::new(&electrs_exe, &bitcoind).unwrap();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 101);
+    }
+
+    #[test]
+    fn test_kill() {
+        let (_, bitcoind, mut electrsd) = setup_nodes();
+        let _ = bitcoind.client.ping().unwrap(); // without using bitcoind, it is dropped and all the rest fails.
+        let _ = electrsd.client.ping().unwrap();
+        assert!(electrsd.client.ping().is_ok());
+        electrsd.kill().unwrap();
+        assert!(electrsd.client.ping().is_err());
+    }
+
+    fn setup_nodes() -> (String, bitcoind::BitcoinD, ElectrsD) {
+        let (bitcoind_exe, electrs_exe) = init();
+        debug!("bitcoind: {}", &bitcoind_exe);
+        debug!("electrs: {}", &electrs_exe);
+        let mut conf = bitcoind::Conf::default();
+        conf.view_stdout = log_enabled!(Level::Debug);
+        if cfg!(feature = "electrs_0_9_1") {
+            conf.p2p = P2P::Yes;
+        }
+        let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
+        let electrs_conf = crate::Conf {
+            view_stderr: log_enabled!(Level::Debug),
+            ..Default::default()
+        };
+        let electrsd = ElectrsD::with_conf(&electrs_exe, &bitcoind, &electrs_conf).unwrap();
+        (electrs_exe, bitcoind, electrsd)
     }
 
     fn init() -> (String, String) {
