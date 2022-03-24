@@ -14,7 +14,9 @@ use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
 use log::{debug, error};
+use std::env;
 use std::ffi::OsStr;
+use std::path::PathBuf;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::Duration;
 
@@ -30,6 +32,8 @@ pub use bitcoind;
 /// conf.view_stderr = false;
 /// conf.http_enabled = false;
 /// conf.network = "regtest";
+/// conf.tmpdir = None;
+/// conf.staticdir = None;
 /// assert_eq!(conf, electrsd::Conf::default());
 /// ```
 #[derive(Debug, PartialEq)]
@@ -47,6 +51,21 @@ pub struct Conf<'a> {
 
     /// Must match bitcoind network
     pub network: &'a str,
+
+    /// Optionally specify a temporary or persistent working directory for the electrs.
+    /// electrs index files will be stored in this path.
+    /// The following two parameters can be configured to simulate desired working directory configuration.
+    ///
+    /// tmpdir is Some() && staticdir is Some() : Error. Cannot be enabled at same time.
+    /// tmpdir is Some(temp_path) && staticdir is None : Create temporary directory at `tmpdir` path.
+    /// tmpdir is None && staticdir is Some(work_path) : Create persistent directory at `staticdir` path.
+    /// tmpdir is None && staticdir is None: Creates a temporary directory in OS default temporary directory (eg /tmp) or `TEMPDIR_ROOT` env variable path.
+    ///
+    /// Temporary directory path
+    pub tmpdir: Option<PathBuf>,
+
+    /// Persistent directory path
+    pub staticdir: Option<PathBuf>,
 }
 
 impl Default for Conf<'_> {
@@ -56,6 +75,8 @@ impl Default for Conf<'_> {
             view_stderr: false,
             http_enabled: false,
             network: "regtest",
+            tmpdir: None,
+            staticdir: None,
         }
     }
 }
@@ -66,13 +87,31 @@ pub struct ElectrsD {
     process: Child,
     /// Electrum client connected to the electrs process
     pub client: RawClient<ElectrumPlaintextStream>,
-    /// DB directory, where electrs store indexes. It is kept in the struct so that
-    /// directory is deleted only when this struct is dropped
-    _db_dir: TempDir,
+    /// Work directory, where the electrs stores indexes and other stuffs.
+    work_dir: DataDir,
     /// Url to connect to the electrum protocol (tcp)
     pub electrum_url: String,
     /// Url to connect to esplora protocol (http)
     pub esplora_url: Option<String>,
+}
+
+/// The DataDir struct defining the kind of data directory electrs will use.
+/// /// Data directory can be either persistent, or temporary.
+pub enum DataDir {
+    /// Persistent Data Directory
+    Persistent(PathBuf),
+    /// Temporary Data Directory
+    Temporary(TempDir),
+}
+
+impl DataDir {
+    /// Return the data directory path
+    fn path(&self) -> PathBuf {
+        match self {
+            Self::Persistent(path) => path.to_owned(),
+            Self::Temporary(tmp_dir) => tmp_dir.path().to_path_buf(),
+        }
+    }
 }
 
 /// All the possible error in this crate
@@ -95,6 +134,9 @@ pub enum Error {
 
     /// Wrapper of early exit status
     EarlyExit(ExitStatus),
+
+    /// Returned when both tmpdir and staticdir is specified in `Conf` options
+    BothDirsSpecified,
 }
 
 impl ElectrsD {
@@ -126,8 +168,20 @@ impl ElectrsD {
 
         let mut args = conf.args.clone();
 
-        let _db_dir = TempDir::new()?;
-        let db_dir = format!("{}", _db_dir.path().display());
+        let work_dir = match (&conf.tmpdir, &conf.staticdir) {
+            (Some(_), Some(_)) => return Err(Error::BothDirsSpecified),
+            (Some(tmpdir), None) => DataDir::Temporary(TempDir::new_in(tmpdir)?),
+            (None, Some(workdir)) => {
+                std::fs::create_dir_all(workdir)?;
+                DataDir::Persistent(workdir.to_owned())
+            }
+            (None, None) => match env::var("TEMPDIR_ROOT").map(PathBuf::from) {
+                Ok(path) => DataDir::Temporary(TempDir::new_in(path)?),
+                Err(_) => DataDir::Temporary(TempDir::new()?),
+            },
+        };
+
+        let db_dir = format!("{}", work_dir.path().display());
         args.push("--db-dir");
         args.push(&db_dir);
 
@@ -215,7 +269,7 @@ impl ElectrsD {
         Ok(ElectrsD {
             process,
             client,
-            _db_dir,
+            work_dir,
             electrum_url,
             esplora_url,
         })
@@ -229,9 +283,28 @@ impl ElectrsD {
         )?)
     }
 
+    /// Return the current workdir path of the running electrs
+    pub fn workdir(&self) -> PathBuf {
+        self.work_dir.path()
+    }
+
     /// terminate the electrs process
     pub fn kill(&mut self) -> Result<(), Error> {
-        Ok(self.process.kill()?)
+        match self.work_dir {
+            DataDir::Persistent(_) => {
+                // Send SIGINT signal to electrsd
+                nix::sys::signal::kill(
+                    nix::unistd::Pid::from_raw(self.process.id() as i32),
+                    nix::sys::signal::SIGINT,
+                )?;
+                // Wait for the process to exit
+                match self.process.wait() {
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(e.into()),
+                }
+            }
+            DataDir::Temporary(_) => Ok(self.process.kill()?),
+        }
     }
 }
 
