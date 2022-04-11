@@ -11,7 +11,7 @@ edition = "2018"
 [dependencies]
 bitcoind = { version = "0.25.0" }
 electrum-client = { version="0.8.0", default-features = false }
-nix = { version="0.22.0", optional = true }
+nix = { version="0.22.0" }
 log = "0.4"
 
 [dev-dependencies]
@@ -23,7 +23,6 @@ zip = {version = "0.5", default-features = false, features = ["bzip2", "deflate"
 ureq = "2.1"
 
 [features]
-trigger = ["nix"]
 legacy = []
 
 esplora_a33e97e1 = []

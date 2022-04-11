@@ -90,7 +90,6 @@ pub enum Error {
     /// Wrapper of bitcoincore_rpc Error
     BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
 
-    #[cfg(feature = "trigger")]
     /// Wrapper of nix Error
     Nix(nix::Error),
 
@@ -222,7 +221,6 @@ impl ElectrsD {
         })
     }
 
-    #[cfg(feature = "trigger")]
     /// triggers electrs sync by sending the `SIGUSR1` signal, useful to call after a block for example
     pub fn trigger(&self) -> Result<(), Error> {
         Ok(nix::sys::signal::kill(
@@ -275,7 +273,6 @@ impl From<bitcoind::bitcoincore_rpc::Error> for Error {
     }
 }
 
-#[cfg(feature = "trigger")]
 impl From<nix::Error> for Error {
     fn from(e: nix::Error) -> Self {
         Error::Nix(e)
@@ -312,7 +309,6 @@ mod test {
         let address = bitcoind.client.get_new_address(None, None).unwrap();
         bitcoind.client.generate_to_address(100, &address).unwrap();
 
-        #[cfg(feature = "trigger")]
         electrsd.trigger().unwrap();
 
         let header = loop {
