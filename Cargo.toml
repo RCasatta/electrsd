@@ -1,6 +1,6 @@
 [package]
 name = "electrsd"
-version = "0.19.0"
+version = "0.19.1"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 bitcoind = { version = "0.26.0" }
-electrum-client = { version="0.8.0", default-features = false }
+electrum-client = { version="0.10.0", default-features = false }
 nix = { version="0.22.0" }
 log = "0.4"
 
@@ -29,6 +29,7 @@ esplora_a33e97e1 = []
 electrs_0_8_10 = []
 electrs_0_9_1 = []
 
+bitcoind_23_0 = ["bitcoind/23_0"]
 bitcoind_22_0 = ["bitcoind/22_0"]
 bitcoind_0_21_1 = ["bitcoind/0_21_1"]
 bitcoind_0_21_0 = ["bitcoind/0_21_0"]
