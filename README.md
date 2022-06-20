@@ -6,7 +6,7 @@
 Utility to run a regtest [electrs](https://github.com/romanz/electrs/) process connected to a given [bitcoind](https://github.com/RCasatta/bitcoind) instance, 
 useful in integration testing environment.
 
-```
+```rust
 let bitcoind = bitcoind::BitcoinD::new("/usr/local/bin/bitcoind").unwrap();
 let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrs", bitcoind).unwrap();
 let header = electrsd.client.block_headers_subscribe().unwrap();
@@ -16,11 +16,11 @@ assert_eq!(header.height, 0);
 ## Automatic binaries download
 
 In your project Cargo.toml, activate the following features
-```
+```yml
 electrsd = { version= "0.12", features = ["bitcoind_0_22", "electrs_0_9_1"] }
 ```
 Then use it:
-```
+```rust
 let bitcoind_exe = bitcoind::downloaded_exe_path().expect("bitcoind version feature must be enabled");
 let bitcoind = bitcoind::BitcoinD::new(bitcoind_exe).unwrap();
 let electrs_exe = electrsd::downloaded_exe_path().expect("electrs version feature must be enabled");
