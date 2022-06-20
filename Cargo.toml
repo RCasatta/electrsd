@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 bitcoind = { git = "https://github.com/weareseba/bitcoind", branch = "feature/proxy" }
-electrum-client = { version="0.8.0", default-features = false }
+electrum-client = { version="0.10", default-features = false }
 nix = { version="0.22.0", optional = true }
 log = "0.4"
 
