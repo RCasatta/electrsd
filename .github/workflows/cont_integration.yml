@@ -12,14 +12,12 @@ jobs:
       RUST_LOG: debug
     strategy:
       matrix:
-        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1", "bitcoind_22_0,trigger,electrs_0_8_10"]
+        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - uses: Swatinem/rust-cache@v1.2.0
-        with:
-          key: ${{ contains(matrix.features, 'trigger') }} # key can't contain commas...
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
         with:
