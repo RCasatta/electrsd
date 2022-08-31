@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 bitcoind = { version = "0.26.0" }
-electrum-client = { version="0.10.0", default-features = false }
+electrum-client = { version="0.11.0", default-features = false }
 nix = { version="0.22.0" }
 log = "0.4"
 
