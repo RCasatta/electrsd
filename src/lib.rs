@@ -36,7 +36,7 @@ pub use bitcoind;
 /// conf.staticdir = None;
 /// assert_eq!(conf, electrsd::Conf::default());
 /// ```
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct Conf<'a> {
     /// Electrsd command line arguments
