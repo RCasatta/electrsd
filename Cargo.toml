@@ -1,6 +1,6 @@
 [package]
 name = "electrsd"
-version = "0.20.0"
+version = "0.21.0"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
@@ -9,9 +9,9 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.26.0" }
-electrum-client = { version="0.11.0", default-features = false }
-nix = { version="0.22.0" }
+bitcoind = { version = "0.27.0" }
+electrum-client = { version="0.12.0", default-features = false }
+nix = { version="0.25.0" }
 log = "0.4"
 
 [dev-dependencies]
