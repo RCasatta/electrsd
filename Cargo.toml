@@ -19,7 +19,7 @@ env_logger = "0.9"
 
 [build-dependencies]
 bitcoin_hashes = "0.10"
-zip = {version = "0.5", default-features = false, features = ["bzip2", "deflate"] }
+zip = {version = "0.6", default-features = false, features = ["bzip2", "deflate"] }
 ureq = "2.1"
 
 [features]
