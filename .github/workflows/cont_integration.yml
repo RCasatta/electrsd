@@ -16,8 +16,8 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
+        uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -41,8 +41,8 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
+        uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -58,8 +58,8 @@ jobs:
   cosmetics:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
