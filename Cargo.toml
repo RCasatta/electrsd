@@ -9,7 +9,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-bitcoind = { version = "0.27.0" }
+bitcoind = { version = "0.28.0" }
 electrum-client = { version="0.12.0", default-features = false }
 nix = { version="0.25.0" }
 log = "0.4"
@@ -19,7 +19,7 @@ env_logger = "0.9"
 
 [build-dependencies]
 bitcoin_hashes = "0.11"
-zip = {version = "0.5", default-features = false, features = ["bzip2", "deflate"] }
+zip = { version = "0.5", default-features = false, features = ["bzip2", "deflate"] }
 ureq = "2.1"
 
 [features]
