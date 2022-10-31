@@ -13,7 +13,7 @@ use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
-use log::{debug, error};
+use log::{debug, error, warn};
 use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -36,7 +36,7 @@ pub use bitcoind;
 /// conf.staticdir = None;
 /// assert_eq!(conf, electrsd::Conf::default());
 /// ```
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub struct Conf<'a> {
     /// Electrsd command line arguments
@@ -66,6 +66,13 @@ pub struct Conf<'a> {
 
     /// Persistent directory path
     pub staticdir: Option<PathBuf>,
+
+    /// Try to spawn the process `attempt` time
+    ///
+    /// The OS is giving available ports to use, however, they aren't booked, so it could rarely
+    /// happen they are used at the time the process is spawn. When retrying other available ports
+    /// are returned reducing the probability of conflicts to negligible.
+    attempts: u8,
 }
 
 impl Default for Conf<'_> {
@@ -77,6 +84,7 @@ impl Default for Conf<'_> {
             network: "regtest",
             tmpdir: None,
             staticdir: None,
+            attempts: 3,
         }
     }
 }
@@ -253,12 +261,19 @@ impl ElectrsD {
         };
 
         debug!("args: {:?}", args);
-        let mut process = Command::new(exe).args(args).stderr(view_stderr).spawn()?;
+        let mut process = Command::new(&exe).args(args).stderr(view_stderr).spawn()?;
 
         let client = loop {
             if let Some(status) = process.try_wait()? {
-                error!("early exit with: {:?}", status);
-                return Err(Error::EarlyExit(status));
+                if conf.attempts > 0 {
+                    warn!("early exit with: {:?}. Trying to launch again ({} attempts remaining), maybe some other process used our available port", status, conf.attempts);
+                    let mut conf = conf.clone();
+                    conf.attempts -= 1;
+                    return Self::with_conf(exe, bitcoind, &conf);
+                } else {
+                    error!("early exit with: {:?}", status);
+                    return Err(Error::EarlyExit(status));
+                }
             }
             match RawClient::new(&electrum_url, None) {
                 Ok(client) => break client,
