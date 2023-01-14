@@ -22,6 +22,8 @@ use std::time::Duration;
 
 // re-export bitcoind
 pub use bitcoind;
+// re-export electrum_client because calling RawClient methods requires the ElectrumApi trait
+pub use electrum_client;
 
 /// Electrs configuration parameters, implements a convenient [Default] for most common use.
 ///
