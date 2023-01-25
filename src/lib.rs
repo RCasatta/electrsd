@@ -6,8 +6,11 @@
 //! Utility to run a regtest electrsd process, useful in integration testing environment
 //!
 
+mod error;
 mod versions;
 
+use bitcoind::anyhow;
+use bitcoind::anyhow::Context;
 use bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value;
 use bitcoind::bitcoincore_rpc::RpcApi;
 use bitcoind::tempfile::TempDir;
@@ -17,13 +20,15 @@ use log::{debug, error, warn};
 use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 // re-export bitcoind
 pub use bitcoind;
 // re-export electrum_client because calling RawClient methods requires the ElectrumApi trait
 pub use electrum_client;
+
+pub use error::Error;
 
 /// Electrs configuration parameters, implements a convenient [Default] for most common use.
 ///
@@ -132,34 +137,9 @@ impl DataDir {
     }
 }
 
-/// All the possible error in this crate
-#[derive(Debug)]
-pub enum Error {
-    /// Wrapper of io Error
-    Io(std::io::Error),
-
-    /// Wrapper of bitcoind Error
-    Bitcoind(bitcoind::Error),
-
-    /// Wrapper of electrum_client Error
-    ElectrumClient(electrum_client::Error),
-
-    /// Wrapper of bitcoincore_rpc Error
-    BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
-
-    /// Wrapper of nix Error
-    Nix(nix::Error),
-
-    /// Wrapper of early exit status
-    EarlyExit(ExitStatus),
-
-    /// Returned when both tmpdir and staticdir is specified in `Conf` options
-    BothDirsSpecified,
-}
-
 impl ElectrsD {
     /// Create a new electrs process connected with the given bitcoind and default args.
-    pub fn new<S: AsRef<OsStr>>(exe: S, bitcoind: &BitcoinD) -> Result<ElectrsD, Error> {
+    pub fn new<S: AsRef<OsStr>>(exe: S, bitcoind: &BitcoinD) -> anyhow::Result<ElectrsD> {
         ElectrsD::with_conf(exe, bitcoind, &Conf::default())
     }
 
@@ -168,7 +148,7 @@ impl ElectrsD {
         exe: S,
         bitcoind: &BitcoinD,
         conf: &Conf,
-    ) -> Result<ElectrsD, Error> {
+    ) -> anyhow::Result<ElectrsD> {
         let response = bitcoind.client.call::<Value>("getblockchaininfo", &[])?;
         if response
             .get("initialblockdownload")
@@ -187,7 +167,7 @@ impl ElectrsD {
         let mut args = conf.args.clone();
 
         let work_dir = match (&conf.tmpdir, &conf.staticdir) {
-            (Some(_), Some(_)) => return Err(Error::BothDirsSpecified),
+            (Some(_), Some(_)) => return Err(Error::BothDirsSpecified.into()),
             (Some(tmpdir), None) => DataDir::Temporary(TempDir::new_in(tmpdir)?),
             (None, Some(workdir)) => {
                 std::fs::create_dir_all(workdir)?;
@@ -271,7 +251,11 @@ impl ElectrsD {
         };
 
         debug!("args: {:?}", args);
-        let mut process = Command::new(&exe).args(args).stderr(view_stderr).spawn()?;
+        let mut process = Command::new(&exe)
+            .args(args)
+            .stderr(view_stderr)
+            .spawn()
+            .with_context(|| format!("Error while executing {:?}", exe.as_ref()))?;
 
         let client = loop {
             if let Some(status) = process.try_wait()? {
@@ -279,10 +263,11 @@ impl ElectrsD {
                     warn!("early exit with: {:?}. Trying to launch again ({} attempts remaining), maybe some other process used our available port", status, conf.attempts);
                     let mut conf = conf.clone();
                     conf.attempts -= 1;
-                    return Self::with_conf(exe, bitcoind, &conf);
+                    return Self::with_conf(exe, bitcoind, &conf)
+                        .with_context(|| format!("Remaining attempts {}", conf.attempts));
                 } else {
                     error!("early exit with: {:?}", status);
-                    return Err(Error::EarlyExit(status));
+                    return Err(Error::EarlyExit(status).into());
                 }
             }
             match RawClient::new(&electrum_url, None) {
@@ -301,7 +286,7 @@ impl ElectrsD {
     }
 
     /// triggers electrs sync by sending the `SIGUSR1` signal, useful to call after a block for example
-    pub fn trigger(&self) -> Result<(), Error> {
+    pub fn trigger(&self) -> anyhow::Result<()> {
         Ok(nix::sys::signal::kill(
             nix::unistd::Pid::from_raw(self.process.id() as i32),
             nix::sys::signal::SIGUSR1,
@@ -314,7 +299,7 @@ impl ElectrsD {
     }
 
     /// terminate the electrs process
-    pub fn kill(&mut self) -> Result<(), Error> {
+    pub fn kill(&mut self) -> anyhow::Result<()> {
         match self.work_dir {
             DataDir::Persistent(_) => {
                 // Send SIGINT signal to electrsd
@@ -336,44 +321,6 @@ impl ElectrsD {
 impl Drop for ElectrsD {
     fn drop(&mut self) {
         let _ = self.kill();
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::Io(e)
-    }
-}
-
-impl From<bitcoind::Error> for Error {
-    fn from(e: bitcoind::Error) -> Self {
-        Error::Bitcoind(e)
-    }
-}
-
-impl From<electrum_client::Error> for Error {
-    fn from(e: electrum_client::Error) -> Self {
-        Error::ElectrumClient(e)
-    }
-}
-
-impl From<bitcoind::bitcoincore_rpc::Error> for Error {
-    fn from(e: bitcoind::bitcoincore_rpc::Error) -> Self {
-        Error::BitcoinCoreRpc(e)
-    }
-}
-
-impl From<nix::Error> for Error {
-    fn from(e: nix::Error) -> Self {
-        Error::Nix(e)
     }
 }
 
