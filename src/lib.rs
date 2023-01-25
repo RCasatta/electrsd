@@ -30,7 +30,6 @@ pub use electrum_client;
 /// Default values:
 /// ```
 /// let mut conf = electrsd::Conf::default();
-/// conf.args = vec!["-vvv"];
 /// conf.view_stderr = false;
 /// conf.http_enabled = false;
 /// conf.network = "regtest";
@@ -79,8 +78,17 @@ pub struct Conf<'a> {
 
 impl Default for Conf<'_> {
     fn default() -> Self {
+        let args = if cfg!(feature = "electrs_0_9_1")
+            || cfg!(feature = "electrs_0_8_10")
+            || cfg!(feature = "esplora_a33e97e1")
+        {
+            vec!["-vvv"]
+        } else {
+            vec![]
+        };
+
         Conf {
-            args: vec!["-vvv"],
+            args,
             view_stderr: false,
             http_enabled: false,
             network: "regtest",
@@ -224,7 +232,9 @@ impl ElectrsD {
         args.push(&rpc_socket);
 
         let p2p_socket;
-        if cfg!(feature = "electrs_0_9_1") {
+        if cfg!(feature = "electrs_0_8_10") || cfg!(feature = "esplora_a33e97e1") {
+            args.push("--jsonrpc-import");
+        } else {
             args.push("--daemon-p2p-addr");
             p2p_socket = bitcoind
                 .params
@@ -232,8 +242,6 @@ impl ElectrsD {
                 .expect("electrs_0_9_1 requires bitcoind with p2p port open")
                 .to_string();
             args.push(&p2p_socket);
-        } else {
-            args.push("--jsonrpc-import");
         }
 
         let electrum_url = format!("0.0.0.0:{}", get_available_port()?);
@@ -432,7 +440,7 @@ mod test {
         debug!("electrs: {}", &electrs_exe);
         let mut conf = bitcoind::Conf::default();
         conf.view_stdout = log_enabled!(Level::Debug);
-        if cfg!(feature = "electrs_0_9_1") {
+        if !cfg!(feature = "electrs_0_8_10") && !cfg!(feature = "esplora_a33e97e1") {
             conf.p2p = P2P::Yes;
         }
         let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
