@@ -147,6 +147,9 @@ pub enum Error {
     /// Wrapper of bitcoincore_rpc Error
     BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
 
+    /// Wrapper of anyhow Error
+    Anyhow(bitcoind::anyhow::Error),
+
     /// Wrapper of nix Error
     Nix(nix::Error),
 
@@ -368,6 +371,12 @@ impl From<electrum_client::Error> for Error {
 impl From<bitcoind::bitcoincore_rpc::Error> for Error {
     fn from(e: bitcoind::bitcoincore_rpc::Error) -> Self {
         Error::BitcoinCoreRpc(e)
+    }
+}
+
+impl From<bitcoind::anyhow::Error> for Error {
+    fn from(e: bitcoind::anyhow::Error) -> Self {
+        Error::Anyhow(e)
     }
 }
 
