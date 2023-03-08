@@ -86,6 +86,7 @@ impl Default for Conf<'_> {
         let args = if cfg!(feature = "electrs_0_9_1")
             || cfg!(feature = "electrs_0_8_10")
             || cfg!(feature = "esplora_a33e97e1")
+            || cfg!(feature = "legacy")
         {
             vec!["-vvv"]
         } else {
@@ -212,7 +213,10 @@ impl ElectrsD {
         args.push(&rpc_socket);
 
         let p2p_socket;
-        if cfg!(feature = "electrs_0_8_10") || cfg!(feature = "esplora_a33e97e1") {
+        if cfg!(feature = "electrs_0_8_10")
+            || cfg!(feature = "esplora_a33e97e1")
+            || cfg!(feature = "legacy")
+        {
             args.push("--jsonrpc-import");
         } else {
             args.push("--daemon-p2p-addr");
