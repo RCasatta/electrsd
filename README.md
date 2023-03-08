@@ -17,7 +17,7 @@ assert_eq!(header.height, 0);
 
 In your project Cargo.toml, activate the following features
 ```yml
-electrsd = { version= "0.12", features = ["bitcoind_0_22", "electrs_0_9_1"] }
+electrsd = { version= "0.23", features = ["bitcoind_23_0", "electrs_0_9_1"] }
 ```
 Then use it:
 ```rust
@@ -26,6 +26,9 @@ let bitcoind = bitcoind::BitcoinD::new(bitcoind_exe).unwrap();
 let electrs_exe = electrsd::downloaded_exe_path().expect("electrs version feature must be enabled");
 let electrsd = electrsd::ElectrsD::new(electrs_exe, bitcoind).unwrap();
 ```
+
+When the `ELECTRSD_DOWNLOAD_ENDPOINT`/`BITCOIND_DOWNLOAD_ENDPOINT` environment variables are set,
+`electrsd`/`bitcoind` will try to download the binaries from the given endpoints.
 
 ## Issues with traditional approach
 
