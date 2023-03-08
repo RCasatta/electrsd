@@ -20,7 +20,7 @@ env_logger = "0.9"
 [build-dependencies]
 bitcoin_hashes = "0.11"
 zip = { version = "0.6", default-features = false, features = ["bzip2", "deflate"] }
-ureq = "2.1"
+minreq = { version = "2.6.0", default-features = false, features = ["https"] }
 
 [features]
 legacy = []
