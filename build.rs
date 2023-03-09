@@ -1,6 +1,6 @@
 use bitcoin_hashes::{sha256, Hash};
 use std::fs::File;
-use std::io::{BufRead, BufReader, Cursor, Read};
+use std::io::{BufRead, BufReader, Cursor};
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::str::FromStr;
@@ -43,14 +43,8 @@ fn main() {
         );
 
         let url = format!("{}/{}", GITHUB_URL, download_filename);
-        let mut downloaded_bytes = Vec::new();
 
-        let _size = ureq::get(&url)
-            .call()
-            .unwrap()
-            .into_reader()
-            .read_to_end(&mut downloaded_bytes)
-            .unwrap();
+        let downloaded_bytes = minreq::get(url).send().unwrap().into_bytes();
 
         let downloaded_hash = sha256::Hash::hash(&downloaded_bytes);
         assert_eq!(expected_hash, downloaded_hash);
