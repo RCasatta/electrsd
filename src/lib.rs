@@ -7,6 +7,7 @@
 //!
 
 mod error;
+mod ext;
 mod versions;
 
 use bitcoind::anyhow;
@@ -361,7 +362,7 @@ mod test {
         electrsd.trigger().unwrap();
 
         let header = loop {
-            std::thread::sleep(std::time::Duration::from_secs(1));
+            std::thread::sleep(std::time::Duration::from_millis(100));
             let header = electrsd.client.block_headers_subscribe().unwrap();
             if header.height > 100 {
                 break header;
@@ -385,7 +386,7 @@ mod test {
         assert!(electrsd.client.ping().is_err());
     }
 
-    fn setup_nodes() -> (String, bitcoind::BitcoinD, ElectrsD) {
+    pub(crate) fn setup_nodes() -> (String, bitcoind::BitcoinD, ElectrsD) {
         let (bitcoind_exe, electrs_exe) = init();
         debug!("bitcoind: {}", &bitcoind_exe);
         debug!("electrs: {}", &electrs_exe);
