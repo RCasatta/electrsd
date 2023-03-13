@@ -12,7 +12,8 @@ jobs:
       RUST_LOG: debug
     strategy:
       matrix:
-        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1"]
+        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1", "bitcoind_22_0,electrs_0_9_11"]
+      fail-fast: false
 
     steps:
       - name: Checkout
