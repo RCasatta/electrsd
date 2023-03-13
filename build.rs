@@ -42,7 +42,9 @@ fn main() {
             download_filename, VERSION, expected_hash
         );
 
-        let url = format!("{}/{}", GITHUB_URL, download_filename);
+        let download_endpoint =
+            std::env::var("ELECTRSD_DOWNLOAD_ENDPOINT").unwrap_or(GITHUB_URL.to_string());
+        let url = format!("{}/{}", download_endpoint, download_filename);
 
         let downloaded_bytes = minreq::get(url).send().unwrap().into_bytes();
 
