@@ -28,6 +28,7 @@ legacy = []
 esplora_a33e97e1 = []
 electrs_0_8_10 = []
 electrs_0_9_1 = []
+electrs_0_9_11 = []
 
 bitcoind_23_0 = ["bitcoind/23_0"]
 bitcoind_22_0 = ["bitcoind/22_0"]
