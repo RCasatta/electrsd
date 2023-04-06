@@ -62,7 +62,11 @@ mod test {
         let (_, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let address = bitcoind.client.get_new_address(None, None).unwrap();
+        let address = bitcoind
+            .client
+            .get_new_address(None, None)
+            .unwrap()
+            .assume_checked();
         bitcoind.client.generate_to_address(100, &address).unwrap();
         electrsd.wait_height(101);
         let header = electrsd.client.block_headers_subscribe().unwrap();
@@ -74,13 +78,21 @@ mod test {
         let (_, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let generate_address = bitcoind.client.get_new_address(None, None).unwrap();
+        let generate_address = bitcoind
+            .client
+            .get_new_address(None, None)
+            .unwrap()
+            .assume_checked();
         bitcoind
             .client
             .generate_to_address(100, &generate_address)
             .unwrap();
 
-        let address = bitcoind.client.get_new_address(None, None).unwrap();
+        let address = bitcoind
+            .client
+            .get_new_address(None, None)
+            .unwrap()
+            .assume_checked();
         let txid = bitcoind
             .client
             .send_to_address(
@@ -98,7 +110,7 @@ mod test {
         electrsd.wait_tx(&txid);
         let history = electrsd
             .client
-            .script_get_history(&address.script_pubkey())
+            .script_get_history(&address.payload.script_pubkey())
             .unwrap();
         assert_eq!(history.len(), 1);
     }

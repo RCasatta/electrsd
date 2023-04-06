@@ -356,7 +356,11 @@ mod test {
         let (electrs_exe, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let address = bitcoind.client.get_new_address(None, None).unwrap();
+        let address = bitcoind
+            .client
+            .get_new_address(None, None)
+            .unwrap()
+            .assume_checked();
         bitcoind.client.generate_to_address(100, &address).unwrap();
 
         electrsd.trigger().unwrap();
