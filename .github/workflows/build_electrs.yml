@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, macos-11 ]
+        os: [ubuntu-18.04, macos-11]
     env:
       ELECTRS_TAG: "v0.9.11"
 
@@ -21,11 +21,8 @@ jobs:
         with:
           repository: romanz/electrs
           ref: ${{ env.ELECTRS_TAG }}
-      - name: Build electrs
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
@@ -41,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, macos-11 ]
+        os: [ubuntu-18.04, macos-11]
     env:
       ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
 
@@ -51,11 +48,8 @@ jobs:
         with:
           repository: Blockstream/electrs
           ref: ${{ env.ELECTRS_COMMIT }}
-      - name: Build electrs
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs

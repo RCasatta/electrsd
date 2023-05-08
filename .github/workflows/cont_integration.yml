@@ -12,23 +12,17 @@ jobs:
       RUST_LOG: debug
     strategy:
       matrix:
-        features: ["bitcoind_22_0,electrs_0_8_10", "bitcoind_22_0,electrs_0_9_1", "bitcoind_22_0,electrs_0_9_11"]
+        features:
+          - bitcoind_22_0,electrs_0_8_10
+          - bitcoind_22_0,electrs_0_9_1
+          - bitcoind_22_0,electrs_0_9_11
       fail-fast: false
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - name: Setup rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Test electrsd
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --features ${{ matrix.features }}
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --features ${{ matrix.features }}
 
 
   test-electrs-esplora:
@@ -41,19 +35,10 @@ jobs:
         features: ["bitcoind_22_0,legacy,esplora_a33e97e1"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - name: Setup rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Test electrsd
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --features ${{ matrix.features }}
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --features ${{ matrix.features }}
 
 
   cosmetics:
@@ -61,14 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          profile: minimal
-          components: rustfmt, clippy
-      - name: fmt
-        run: cargo fmt -- --check
-      - name: clippy
-        run: cargo clippy -- -D warnings
-
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo fmt -- --check
+      - run: cargo clippy -- -D warnings
