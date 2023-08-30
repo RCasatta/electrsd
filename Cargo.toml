@@ -10,7 +10,7 @@ edition = "2018"
 categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 
 [dependencies]
-bitcoind = { version = "0.30.0" }
+bitcoind = { version = "0.33.0" }
 electrum-client = { version = "0.15.0", default-features = false }
 nix = { version="0.25.0" }
 log = "0.4"
@@ -21,7 +21,7 @@ env_logger = "0.10"
 [build-dependencies]
 bitcoin_hashes = "0.12"
 zip = { version = "0.6", default-features = false, features = ["bzip2", "deflate"] }
-minreq = { version = "2.6.0", default-features = false, features = ["https"] }
+minreq = { version = "2.9.0", default-features = false, features = ["https"] }
 
 [features]
 legacy = []
@@ -31,14 +31,12 @@ electrs_0_8_10 = []
 electrs_0_9_1 = []
 electrs_0_9_11 = []
 
-bitcoind_23_0 = ["bitcoind/23_0"]
-bitcoind_22_0 = ["bitcoind/22_0"]
-bitcoind_0_21_1 = ["bitcoind/0_21_1"]
-bitcoind_0_21_0 = ["bitcoind/0_21_0"]
-bitcoind_0_20_1 = ["bitcoind/0_20_1"]
-bitcoind_0_20_0 = ["bitcoind/0_20_0"]
+bitcoind_25_0 = ["bitcoind/25_0"]
+bitcoind_24_0_1 = ["bitcoind/24_0_1"]
+bitcoind_23_1 = ["bitcoind/23_1"]
+bitcoind_22_1 = ["bitcoind/22_1"]
+bitcoind_0_21_2 = ["bitcoind/0_21_2"]
+bitcoind_0_20_2 = ["bitcoind/0_20_2"]
 bitcoind_0_19_1 = ["bitcoind/0_19_1"]
-bitcoind_0_19_0_1 = ["bitcoind/0_19_0_1"]
 bitcoind_0_18_1 = ["bitcoind/0_18_1"]
-bitcoind_0_18_0 = ["bitcoind/0_18_0"]
 bitcoind_0_17_1 = ["bitcoind/0_17_1"]
