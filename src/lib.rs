@@ -411,12 +411,12 @@ mod test {
     fn init() -> (String, String) {
         let _ = env_logger::try_init();
         let bitcoind_exe_path = bitcoind::exe_path().unwrap();
-        let electrs_exe_path = if let Ok(env_electrs_exe) = env::var("ELECTRS_EXE") {
+        let electrs_exe_path = if let Ok(env_electrs_exe) = env::var("ELECTRS_EXEC") {
             env_electrs_exe
         } else if let Some(downloaded_exe_path) = crate::downloaded_exe_path() {
             downloaded_exe_path
         } else {
-            panic!("when no version feature is specified, you must specify ELECTRS_EXE env var")
+            panic!("when no version feature is specified, you must specify ELECTRS_EXEC env var")
         };
         (bitcoind_exe_path, electrs_exe_path)
     }
