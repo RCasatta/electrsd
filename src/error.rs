@@ -21,6 +21,10 @@ pub enum Error {
 
     /// Returned when both tmpdir and staticdir is specified in `Conf` options
     BothDirsSpecified,
+
+    /// Returned when calling methods requiring the bitcoind executable but none is found
+    /// (no feature, no `ELECTRS_EXEC`, no `electrs` in `PATH` )
+    NoElectrsExecutableFound,
 }
 
 impl std::error::Error for Error {

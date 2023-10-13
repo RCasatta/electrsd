@@ -12,31 +12,41 @@ categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 [dependencies]
 bitcoind = { version = "0.33.0" }
 electrum-client = { version = "0.15.0", default-features = false }
-nix = { version="0.25.0" }
+nix = { version = "0.25.0" }
 log = "0.4"
+which = "4.2.5"
 
 [dev-dependencies]
 env_logger = "0.10"
 
 [build-dependencies]
-bitcoin_hashes = "0.12"
-zip = { version = "0.6", default-features = false, features = ["bzip2", "deflate"] }
-minreq = { version = "2.9.0", default-features = false, features = ["https"] }
+bitcoin_hashes = { version = "0.12", optional = true }
+zip = { version = "0.6", default-features = false, optional = true, features = [
+  "bzip2",
+  "deflate",
+] }
+minreq = { version = "2.9.0", default-features = false, optional = true, features = [
+  "https",
+] }
 
 [features]
 legacy = []
 
-esplora_a33e97e1 = []
-electrs_0_8_10 = []
-electrs_0_9_1 = []
-electrs_0_9_11 = []
+# download is not supposed to be used directly only through selecting one of the version feature
+download = ["bitcoin_hashes", "zip", "minreq"]
 
-bitcoind_25_0 = ["bitcoind/25_0"]
-bitcoind_24_0_1 = ["bitcoind/24_0_1"]
-bitcoind_23_1 = ["bitcoind/23_1"]
-bitcoind_22_1 = ["bitcoind/22_1"]
-bitcoind_0_21_2 = ["bitcoind/0_21_2"]
-bitcoind_0_20_2 = ["bitcoind/0_20_2"]
-bitcoind_0_19_1 = ["bitcoind/0_19_1"]
-bitcoind_0_18_1 = ["bitcoind/0_18_1"]
-bitcoind_0_17_1 = ["bitcoind/0_17_1"]
+
+esplora_a33e97e1 = ["download"]
+electrs_0_8_10 = ["download"]
+electrs_0_9_1 = ["download"]
+electrs_0_9_11 = ["download"]
+
+bitcoind_25_0 = ["download", "bitcoind/25_0"]
+bitcoind_24_0_1 = ["download", "bitcoind/24_0_1"]
+bitcoind_23_1 = ["download", "bitcoind/23_1"]
+bitcoind_22_1 = ["download", "bitcoind/22_1"]
+bitcoind_0_21_2 = ["download", "bitcoind/0_21_2"]
+bitcoind_0_20_2 = ["download", "bitcoind/0_20_2"]
+bitcoind_0_19_1 = ["download", "bitcoind/0_19_1"]
+bitcoind_0_18_1 = ["download", "bitcoind/0_18_1"]
+bitcoind_0_17_1 = ["download", "bitcoind/0_17_1"]

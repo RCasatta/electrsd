@@ -30,6 +30,7 @@ pub use bitcoind;
 pub use electrum_client;
 
 pub use error::Error;
+pub use which;
 
 /// Electrs configuration parameters, implements a convenient [Default] for most common use.
 ///
@@ -340,6 +341,24 @@ pub fn downloaded_exe_path() -> Option<String> {
     } else {
         None
     }
+}
+
+/// Returns the daemon `electrs` executable with the following precedence:
+///
+/// 1) If it's specified in the `ELECTRS_EXEC` env var
+/// 2) If there is no env var but an auto-download feature such as `electrs_0_9_11` is enabled, returns the
+/// path of the downloaded executabled
+/// 3) If neither of the precedent are available, the `electrs` executable is searched in the `PATH`
+pub fn exe_path() -> anyhow::Result<String> {
+    if let Ok(path) = std::env::var("ELECTRS_EXEC") {
+        return Ok(path);
+    }
+    if let Some(path) = downloaded_exe_path() {
+        return Ok(path);
+    }
+    which::which("electrs")
+        .map_err(|_| Error::NoElectrsExecutableFound.into())
+        .map(|p| p.display().to_string())
 }
 
 #[cfg(test)]
