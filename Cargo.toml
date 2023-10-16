@@ -1,6 +1,6 @@
 [package]
 name = "electrsd"
-version = "0.26.0"
+version = "0.27.0"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
@@ -10,8 +10,8 @@ edition = "2018"
 categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 
 [dependencies]
-bitcoind = { version = "0.33.0" }
-electrum-client = { version = "0.15.0", default-features = false }
+bitcoind = { version = "0.34.0" }
+electrum-client = { version = "0.19.0", default-features = false }
 nix = { version = "0.25.0" }
 log = "0.4"
 which = "4.2.5"
@@ -20,7 +20,7 @@ which = "4.2.5"
 env_logger = "0.10"
 
 [build-dependencies]
-bitcoin_hashes = { version = "0.12", optional = true }
+bitcoin_hashes = { version = "0.13", optional = true }
 zip = { version = "0.6", default-features = false, optional = true, features = [
   "bzip2",
   "deflate",

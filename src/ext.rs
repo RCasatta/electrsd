@@ -110,7 +110,7 @@ mod test {
         electrsd.wait_tx(&txid);
         let history = electrsd
             .client
-            .script_get_history(&address.payload.script_pubkey())
+            .script_get_history(&address.script_pubkey())
             .unwrap();
         assert_eq!(history.len(), 1);
     }
