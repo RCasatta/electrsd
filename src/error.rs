@@ -25,6 +25,9 @@ pub enum Error {
     /// Returned when calling methods requiring the bitcoind executable but none is found
     /// (no feature, no `ELECTRS_EXEC`, no `electrs` in `PATH` )
     NoElectrsExecutableFound,
+
+    /// Returned if both env vars `ELECTRS_EXEC` and `ELECTRS_EXE` are found
+    BothEnvVars,
 }
 
 impl std::error::Error for Error {

@@ -345,12 +345,19 @@ pub fn downloaded_exe_path() -> Option<String> {
 
 /// Returns the daemon `electrs` executable with the following precedence:
 ///
-/// 1) If it's specified in the `ELECTRS_EXEC` env var
+/// 1) If it's specified in the `ELECTRS_EXEC` or in `ELECTRS_EXE` env var
+/// (errors if both env vars are present)
 /// 2) If there is no env var but an auto-download feature such as `electrs_0_9_11` is enabled, returns the
 /// path of the downloaded executabled
 /// 3) If neither of the precedent are available, the `electrs` executable is searched in the `PATH`
 pub fn exe_path() -> anyhow::Result<String> {
+    if let (Ok(_), Ok(_)) = (std::env::var("ELECTRS_EXEC"), std::env::var("ELECTRS_EXE")) {
+        return Err(error::Error::BothEnvVars.into());
+    }
     if let Ok(path) = std::env::var("ELECTRS_EXEC") {
+        return Ok(path);
+    }
+    if let Ok(path) = std::env::var("ELECTRS_EXE") {
         return Ok(path);
     }
     if let Some(path) = downloaded_exe_path() {
@@ -364,11 +371,22 @@ pub fn exe_path() -> anyhow::Result<String> {
 #[cfg(test)]
 mod test {
     use crate::bitcoind::P2P;
+    use crate::exe_path;
     use crate::ElectrsD;
     use bitcoind::bitcoincore_rpc::RpcApi;
     use electrum_client::ElectrumApi;
     use log::{debug, log_enabled, Level};
     use std::env;
+
+    #[test]
+    fn test_both_env_vars() {
+        env::set_var("ELECTRS_EXEC", "placeholder");
+        env::set_var("ELECTRS_EXE", "placeholder");
+        assert!(exe_path().is_err());
+        // unsetting because this errors everything in mod test!
+        env::remove_var("ELECTRS_EXEC");
+        env::remove_var("ELECTRS_EXE");
+    }
 
     #[test]
     fn test_electrsd() {
@@ -430,13 +448,7 @@ mod test {
     fn init() -> (String, String) {
         let _ = env_logger::try_init();
         let bitcoind_exe_path = bitcoind::exe_path().unwrap();
-        let electrs_exe_path = if let Ok(env_electrs_exe) = env::var("ELECTRS_EXEC") {
-            env_electrs_exe
-        } else if let Some(downloaded_exe_path) = crate::downloaded_exe_path() {
-            downloaded_exe_path
-        } else {
-            panic!("when no version feature is specified, you must specify ELECTRS_EXEC env var")
-        };
+        let electrs_exe_path = exe_path().unwrap();
         (bitcoind_exe_path, electrs_exe_path)
     }
 }

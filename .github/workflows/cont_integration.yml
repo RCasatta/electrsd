@@ -44,6 +44,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --features ${{ matrix.features }}
 
+  test-electrs-no-download:
+    name: Test Electrs no auto-download features
+    runs-on: ubuntu-20.04
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install electrs
+        # Automatically cache installed binaries to avoid compiling them each run
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: electrs
+      - name: Checkout Crate
+        uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --features 'bitcoind/25_0'
 
   cosmetics:
     runs-on: ubuntu-20.04
