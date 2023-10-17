@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CARGO_TERM_COLOR: always
+      ELECTRS_EXEC: "/home/runner/.cargo-install/electrs/bin/electrs"
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install electrs
@@ -56,6 +57,7 @@ jobs:
         uses: baptiste0928/cargo-install@v2
         with:
           crate: electrs
+      - run: "echo $ELECTRS_EXEC"
       - name: Checkout Crate
         uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
