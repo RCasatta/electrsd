@@ -379,6 +379,7 @@ mod test {
     use std::env;
 
     #[test]
+    #[ignore] // launch singularly since env are globals
     fn test_both_env_vars() {
         env::set_var("ELECTRS_EXEC", "placeholder");
         env::set_var("ELECTRS_EXE", "placeholder");
