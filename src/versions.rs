@@ -4,6 +4,9 @@ const OS: &str = "macos";
 #[cfg(target_os = "linux")]
 const OS: &str = "linux";
 
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+const OS: &str = "undefined";
+
 #[cfg(feature = "electrs_0_8_10")]
 const VERSION: &str = "v0.8.10";
 
