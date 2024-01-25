@@ -27,7 +27,7 @@ impl ElectrsD {
                 Ok(tx) => {
                     // having the raw tx doesn't mean the scripts has been indexed
                     let txid = tx.txid();
-                    if let Some(output) = tx.output.get(0) {
+                    if let Some(output) = tx.output.first() {
                         let history = self
                             .client
                             .script_get_history(&output.script_pubkey)
