@@ -78,3 +78,4 @@ Thanks to these features every `#[test]` could easily run isolated with its own 
   * [bdk](https://github.com/bitcoindevkit/bdk)
   * [BEWallet](https://github.com/LeoComandini/BEWallet)
   * [gdk rust](https://github.com/Blockstream/gdk/blob/master/subprojects/gdk_rust/)
+  * [lwk](https://github.com/Blockstream/lwk)
