@@ -16,6 +16,9 @@ nix = { version = "0.25.0" }
 log = "0.4"
 which = "4.2.5"
 
+[target.'cfg(not(windows))'.dependencies]
+nix = { version = "0.25.0" }
+
 [dev-dependencies]
 env_logger = "0.10"
 

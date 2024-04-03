@@ -292,11 +292,17 @@ impl ElectrsD {
     }
 
     /// triggers electrs sync by sending the `SIGUSR1` signal, useful to call after a block for example
+    #[cfg(not(target_os = "windows"))]
     pub fn trigger(&self) -> anyhow::Result<()> {
         Ok(nix::sys::signal::kill(
             nix::unistd::Pid::from_raw(self.process.id() as i32),
             nix::sys::signal::SIGUSR1,
         )?)
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn trigger(&self) -> anyhow::Result<()> {
+        Ok(())
     }
 
     /// Return the current workdir path of the running electrs
@@ -308,11 +314,7 @@ impl ElectrsD {
     pub fn kill(&mut self) -> anyhow::Result<()> {
         match self.work_dir {
             DataDir::Persistent(_) => {
-                // Send SIGINT signal to electrsd
-                nix::sys::signal::kill(
-                    nix::unistd::Pid::from_raw(self.process.id() as i32),
-                    nix::sys::signal::SIGINT,
-                )?;
+                self.inner_kill()?;
                 // Wait for the process to exit
                 match self.process.wait() {
                     Ok(_) => Ok(()),
@@ -321,6 +323,20 @@ impl ElectrsD {
             }
             DataDir::Temporary(_) => Ok(self.process.kill()?),
         }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn inner_kill(&mut self) -> anyhow::Result<()> {
+        // Send SIGINT signal to electrsd
+        Ok(nix::sys::signal::kill(
+            nix::unistd::Pid::from_raw(self.process.id() as i32),
+            nix::sys::signal::SIGINT,
+        )?)
+    }
+
+    #[cfg(target_os = "windows")]
+    fn inner_kill(&mut self) -> anyhow::Result<()> {
+        Ok(self.process.kill()?)
     }
 }
 

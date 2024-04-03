@@ -14,6 +14,7 @@ pub enum Error {
     BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
 
     /// Wrapper of nix Error
+    #[cfg(not(target_os = "windows"))]
     Nix(nix::Error),
 
     /// Wrapper of early exit status
@@ -37,7 +38,10 @@ impl std::error::Error for Error {
             Error::Bitcoind(e) => Some(e),
             Error::ElectrumClient(e) => Some(e),
             Error::BitcoinCoreRpc(e) => Some(e),
+
+            #[cfg(not(target_os = "windows"))]
             Error::Nix(e) => Some(e),
+
             _ => None,
         }
     }
@@ -73,6 +77,7 @@ impl From<bitcoind::bitcoincore_rpc::Error> for Error {
     }
 }
 
+#[cfg(not(target_os = "windows"))]
 impl From<nix::Error> for Error {
     fn from(e: nix::Error) -> Self {
         Error::Nix(e)
