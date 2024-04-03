@@ -8,6 +8,18 @@ name: CI
 
 jobs:
 
+  build:
+    strategy:
+      matrix:
+        os: ["macos-12", "ubuntu-22.04", "windows-2022"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build
+
+
   test-electrs:
     name: Test Electrs
     runs-on: ubuntu-20.04
