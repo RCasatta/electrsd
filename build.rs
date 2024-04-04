@@ -32,6 +32,10 @@ mod download {
     }
 
     pub fn download() {
+        if std::env::var_os("ELECTRSD_SKIP_DOWNLOAD").is_some() {
+            return;
+        }
+
         if !HAS_FEATURE {
             return;
         }

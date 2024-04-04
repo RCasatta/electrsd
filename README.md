@@ -46,6 +46,10 @@ if let Ok(exe_path) = electrsd::exe_path() {
 
 Startup options could be configured via the `Conf` struct using `electrsD::with_conf` or `electrsD::from_downloaded_with_conf`.
 
+## Nix
+
+For determinisim, in nix you cannot hit the internet within the `build.rs`. Moreover, some downstream crates cannot remove the auto-download feature from their dev-deps. In this case you can set the `ELECTRSD_SKIP_DOWNLOAD` env var and provide the electrs executable in the `PATH` (or skip the test execution).
+
 ## Issues with traditional approach
 
 I used integration testing based on external bash script launching needed external processes, there are many issues with this approach like:
