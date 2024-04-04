@@ -1,6 +1,6 @@
 [package]
 name = "electrsd"
-version = "0.27.2"
+version = "0.27.3"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a regtest electrs process, useful in integration testing environment"
 repository = "https://github.com/RCasatta/electrsd"
