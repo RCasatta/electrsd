@@ -12,14 +12,14 @@ categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 [dependencies]
 bitcoind = { version = "0.34.0" }
 electrum-client = { version = "0.19.0", default-features = false }
-log = "0.4"
-which = "4.2.5"
+log = { version = "0.4" }
+which = { version = "4.2.5" }
 
 [target.'cfg(not(windows))'.dependencies]
 nix = { version = "0.25.0" }
 
 [dev-dependencies]
-env_logger = "0.10"
+env_logger = { version = "0.10" }
 
 [build-dependencies]
 bitcoin_hashes = { version = "0.13", optional = true }
@@ -36,7 +36,6 @@ legacy = []
 
 # download is not supposed to be used directly only through selecting one of the version feature
 download = ["bitcoin_hashes", "zip", "minreq"]
-
 
 esplora_a33e97e1 = ["download"]
 electrs_0_8_10 = ["download"]
