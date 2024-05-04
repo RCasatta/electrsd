@@ -26,7 +26,7 @@ impl ElectrsD {
             match self.client.transaction_get(txid) {
                 Ok(tx) => {
                     // having the raw tx doesn't mean the scripts has been indexed
-                    let txid = tx.txid();
+                    let txid = tx.compute_txid();
                     if let Some(output) = tx.output.first() {
                         let history = self
                             .client
