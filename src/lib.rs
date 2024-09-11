@@ -361,10 +361,8 @@ pub fn downloaded_exe_path() -> Option<String> {
 
 /// Returns the daemon `electrs` executable with the following precedence:
 ///
-/// 1) If it's specified in the `ELECTRS_EXEC` or in `ELECTRS_EXE` env var
-/// (errors if both env vars are present)
-/// 2) If there is no env var but an auto-download feature such as `electrs_0_9_11` is enabled, returns the
-/// path of the downloaded executabled
+/// 1) If it's specified in the `ELECTRS_EXEC` or in `ELECTRS_EXE` env var (errors if both env vars are present)
+/// 2) If there is no env var but an auto-download feature such as `electrs_0_9_11` is enabled, returns the path of the downloaded executabled
 /// 3) If neither of the precedent are available, the `electrs` executable is searched in the `PATH`
 pub fn exe_path() -> anyhow::Result<String> {
     if let (Ok(_), Ok(_)) = (std::env::var("ELECTRS_EXEC"), std::env::var("ELECTRS_EXE")) {
