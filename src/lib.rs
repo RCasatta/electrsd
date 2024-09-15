@@ -107,7 +107,7 @@ impl Default for Conf<'_> {
     }
 }
 
-/// Struct representing the bitcoind process with related information
+/// Struct representing the electrs process with related information
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
     process: Child,
