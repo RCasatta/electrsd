@@ -18,11 +18,13 @@ use bitcoind::tempfile::TempDir;
 use bitcoind::{get_available_port, BitcoinD};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
 use log::{debug, error, warn};
-use std::env;
 use std::ffi::OsStr;
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
+use std::{env, thread};
 
 // re-export bitcoind
 pub use bitcoind;
@@ -53,6 +55,9 @@ pub struct Conf<'a> {
 
     /// if `true` electrsd log output will not be suppressed
     pub view_stderr: bool,
+
+    /// Log level of electrs
+    pub log_level: log::Level,
 
     /// if `true` electrsd exposes an esplora endpoint
     pub http_enabled: bool,
@@ -103,11 +108,12 @@ impl Default for Conf<'_> {
             tmpdir: None,
             staticdir: None,
             attempts: 3,
+            log_level: log::Level::Info,
         }
     }
 }
 
-/// Struct representing the bitcoind process with related information
+/// Struct representing the electrs process with related information
 pub struct ElectrsD {
     /// Process child handle, used to terminate the process when this struct is dropped
     process: Child,
@@ -119,6 +125,8 @@ pub struct ElectrsD {
     pub electrum_url: String,
     /// Url to connect to esplora protocol (http)
     pub esplora_url: Option<String>,
+    /// A buffer receiving stdout and stderr
+    pub logs: Receiver<String>,
 }
 
 /// The DataDir struct defining the kind of data directory electrs will use.
@@ -250,18 +258,35 @@ impl ElectrsD {
             None
         };
 
-        let view_stderr = if conf.view_stderr {
-            Stdio::inherit()
-        } else {
-            Stdio::null()
-        };
+        let log_level = format!("--log-filters {}", conf.log_level);
+        args.push(&log_level);
 
         debug!("args: {:?}", args);
         let mut process = Command::new(&exe)
             .args(args)
-            .stderr(view_stderr)
+            .stderr(Stdio::piped())
+            .stdout(Stdio::piped())
             .spawn()
             .with_context(|| format!("Error while executing {:?}", exe.as_ref()))?;
+
+        let (sender, logs) = mpsc::channel();
+        let stdout = process.stdout.take().unwrap();
+        let stderr = process.stderr.take().unwrap();
+
+        let s = sender.clone();
+        thread::spawn(move || {
+            let reader = BufReader::new(stdout);
+            for line in reader.lines() {
+                s.send(line.unwrap());
+            }
+        });
+
+        thread::spawn(move || {
+            let reader = BufReader::new(stderr);
+            for line in reader.lines() {
+                sender.send(line.unwrap());
+            }
+        });
 
         let client = loop {
             if let Some(status) = process.try_wait()? {
@@ -288,6 +313,7 @@ impl ElectrsD {
             work_dir,
             electrum_url,
             esplora_url,
+            logs,
         })
     }
 
