@@ -56,8 +56,9 @@ pub struct Conf<'a> {
     /// if `true` electrsd log output will not be suppressed
     pub view_stderr: bool,
 
-    /// Log level of electrs
-    pub log_level: log::Level,
+    /// if true, logs (stdout + stderr) are redirected to ElectrsD.logs
+    /// note: this feature will take precedence over `view_stderr`
+    pub buffered_logs: bool,
 
     /// if `true` electrsd exposes an esplora endpoint
     pub http_enabled: bool,
@@ -108,7 +109,7 @@ impl Default for Conf<'_> {
             tmpdir: None,
             staticdir: None,
             attempts: 3,
-            log_level: log::Level::Info,
+            buffered_logs: false,
         }
     }
 }
@@ -258,14 +259,19 @@ impl ElectrsD {
             None
         };
 
-        let log_level = format!("--log-filters {}", conf.log_level);
-        args.push(&log_level);
+        let (stderr, stdout) = if conf.buffered_logs {
+            (Stdio::piped(), Stdio::piped())
+        } else if conf.view_stderr {
+            (Stdio::inherit(), Stdio::null())
+        } else {
+            (Stdio::null(), Stdio::null())
+        };
 
         debug!("args: {:?}", args);
         let mut process = Command::new(&exe)
             .args(args)
-            .stderr(Stdio::piped())
-            .stdout(Stdio::piped())
+            .stderr(stderr)
+            .stdout(stdout)
             .spawn()
             .with_context(|| format!("Error while executing {:?}", exe.as_ref()))?;
 
@@ -273,20 +279,22 @@ impl ElectrsD {
         let stdout = process.stdout.take().unwrap();
         let stderr = process.stderr.take().unwrap();
 
-        let s = sender.clone();
-        thread::spawn(move || {
-            let reader = BufReader::new(stdout);
-            for line in reader.lines() {
-                s.send(line.unwrap());
-            }
-        });
+        if conf.buffered_logs {
+            let s = sender.clone();
+            thread::spawn(move || {
+                let reader = BufReader::new(stdout);
+                for line in reader.lines() {
+                    s.send(line.unwrap());
+                }
+            });
 
-        thread::spawn(move || {
-            let reader = BufReader::new(stderr);
-            for line in reader.lines() {
-                sender.send(line.unwrap());
-            }
-        });
+            thread::spawn(move || {
+                let reader = BufReader::new(stderr);
+                for line in reader.lines() {
+                    sender.send(line.unwrap());
+                }
+            });
+        }
 
         let client = loop {
             if let Some(status) = process.try_wait()? {
@@ -349,6 +357,11 @@ impl ElectrsD {
             }
             DataDir::Temporary(_) => Ok(self.process.kill()?),
         }
+    }
+
+    /// clear the log buffer
+    pub fn clear_logs(&mut self) {
+        while self.logs.try_recv().is_ok() {}
     }
 
     #[cfg(not(target_os = "windows"))]
