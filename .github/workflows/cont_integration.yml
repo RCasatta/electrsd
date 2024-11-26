@@ -32,6 +32,7 @@ jobs:
           - bitcoind_22_1,electrs_0_8_10
           - bitcoind_22_1,electrs_0_9_1
           - bitcoind_22_1,electrs_0_9_11
+          - bitcoind_22_1,electrs_0_10_6
       fail-fast: false
 
     steps:

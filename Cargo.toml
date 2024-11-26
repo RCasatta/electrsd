@@ -41,6 +41,7 @@ esplora_a33e97e1 = ["download"]
 electrs_0_8_10 = ["download"]
 electrs_0_9_1 = ["download"]
 electrs_0_9_11 = ["download"]
+electrs_0_10_6 = ["download"]
 
 bitcoind_25_0 = ["download", "bitcoind/25_0"]
 bitcoind_24_0_1 = ["download", "bitcoind/24_0_1"]
