@@ -10,12 +10,11 @@ mod error;
 mod ext;
 mod versions;
 
-use bitcoind::anyhow;
-use bitcoind::anyhow::Context;
-use bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value;
-use bitcoind::bitcoincore_rpc::RpcApi;
-use bitcoind::tempfile::TempDir;
-use bitcoind::{get_available_port, BitcoinD};
+use corepc_node::anyhow::Context;
+use corepc_node::get_available_port;
+use corepc_node::serde_json::Value;
+use corepc_node::tempfile::TempDir;
+use corepc_node::{anyhow, Node};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
 use log::{debug, error, warn};
 use std::env;
@@ -25,7 +24,7 @@ use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 // re-export bitcoind
-pub use bitcoind;
+pub use corepc_client;
 // re-export electrum_client because calling RawClient methods requires the ElectrumApi trait
 pub use electrum_client;
 
@@ -142,14 +141,14 @@ impl DataDir {
 
 impl ElectrsD {
     /// Create a new electrs process connected with the given bitcoind and default args.
-    pub fn new<S: AsRef<OsStr>>(exe: S, bitcoind: &BitcoinD) -> anyhow::Result<ElectrsD> {
+    pub fn new<S: AsRef<OsStr>>(exe: S, bitcoind: &Node) -> anyhow::Result<ElectrsD> {
         ElectrsD::with_conf(exe, bitcoind, &Conf::default())
     }
 
     /// Create a new electrs process using given [Conf] connected with the given bitcoind
     pub fn with_conf<S: AsRef<OsStr>>(
         exe: S,
-        bitcoind: &BitcoinD,
+        bitcoind: &Node,
         conf: &Conf,
     ) -> anyhow::Result<ElectrsD> {
         let response = bitcoind.client.call::<Value>("getblockchaininfo", &[])?;
@@ -384,10 +383,9 @@ pub fn exe_path() -> anyhow::Result<String> {
 
 #[cfg(test)]
 mod test {
-    use crate::bitcoind::P2P;
     use crate::exe_path;
     use crate::ElectrsD;
-    use bitcoind::bitcoincore_rpc::RpcApi;
+    use corepc_node::P2P;
     use electrum_client::ElectrumApi;
     use log::{debug, log_enabled, Level};
     use std::env;
@@ -408,11 +406,7 @@ mod test {
         let (electrs_exe, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let address = bitcoind
-            .client
-            .get_new_address(None, None)
-            .unwrap()
-            .assume_checked();
+        let address = bitcoind.client.new_address().unwrap();
         bitcoind.client.generate_to_address(100, &address).unwrap();
 
         electrsd.trigger().unwrap();
@@ -435,23 +429,23 @@ mod test {
     #[test]
     fn test_kill() {
         let (_, bitcoind, mut electrsd) = setup_nodes();
-        let _ = bitcoind.client.ping().unwrap(); // without using bitcoind, it is dropped and all the rest fails.
+        let _ = bitcoind.client.get_network_info().unwrap(); // without using bitcoind, it is dropped and all the rest fails.
         let _ = electrsd.client.ping().unwrap();
         assert!(electrsd.client.ping().is_ok());
         electrsd.kill().unwrap();
         assert!(electrsd.client.ping().is_err());
     }
 
-    pub(crate) fn setup_nodes() -> (String, bitcoind::BitcoinD, ElectrsD) {
+    pub(crate) fn setup_nodes() -> (String, corepc_node::Node, ElectrsD) {
         let (bitcoind_exe, electrs_exe) = init();
         debug!("bitcoind: {}", &bitcoind_exe);
         debug!("electrs: {}", &electrs_exe);
-        let mut conf = bitcoind::Conf::default();
+        let mut conf = corepc_node::Conf::default();
         conf.view_stdout = log_enabled!(Level::Debug);
         if !cfg!(feature = "electrs_0_8_10") && !cfg!(feature = "esplora_a33e97e1") {
             conf.p2p = P2P::Yes;
         }
-        let bitcoind = bitcoind::BitcoinD::with_conf(&bitcoind_exe, &conf).unwrap();
+        let bitcoind = corepc_node::Node::with_conf(&bitcoind_exe, &conf).unwrap();
         let electrs_conf = crate::Conf {
             view_stderr: log_enabled!(Level::Debug),
             ..Default::default()
@@ -462,7 +456,7 @@ mod test {
 
     fn init() -> (String, String) {
         let _ = env_logger::try_init();
-        let bitcoind_exe_path = bitcoind::exe_path().unwrap();
+        let bitcoind_exe_path = corepc_node::exe_path().unwrap();
         let electrs_exe_path = exe_path().unwrap();
         (bitcoind_exe_path, electrs_exe_path)
     }

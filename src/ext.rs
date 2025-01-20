@@ -53,7 +53,6 @@ impl ElectrsD {
 #[cfg(test)]
 mod test {
     use crate::test::setup_nodes;
-    use bitcoind::bitcoincore_rpc::RpcApi;
     use electrum_client::{bitcoin::Amount, ElectrumApi};
 
     #[cfg(not(feature = "electrs_0_8_10"))]
@@ -62,11 +61,7 @@ mod test {
         let (_, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let address = bitcoind
-            .client
-            .get_new_address(None, None)
-            .unwrap()
-            .assume_checked();
+        let address = bitcoind.client.new_address().unwrap();
         bitcoind.client.generate_to_address(100, &address).unwrap();
         electrsd.wait_height(101);
         let header = electrsd.client.block_headers_subscribe().unwrap();
@@ -78,33 +73,18 @@ mod test {
         let (_, bitcoind, electrsd) = setup_nodes();
         let header = electrsd.client.block_headers_subscribe().unwrap();
         assert_eq!(header.height, 1);
-        let generate_address = bitcoind
-            .client
-            .get_new_address(None, None)
-            .unwrap()
-            .assume_checked();
+        let generate_address = bitcoind.client.new_address().unwrap();
         bitcoind
             .client
             .generate_to_address(100, &generate_address)
             .unwrap();
 
-        let address = bitcoind
-            .client
-            .get_new_address(None, None)
-            .unwrap()
-            .assume_checked();
+        let address = bitcoind.client.new_address().unwrap();
         let txid = bitcoind
             .client
-            .send_to_address(
-                &address,
-                Amount::from_sat(10000),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            )
+            .send_to_address(&address, Amount::from_sat(10000))
+            .unwrap()
+            .txid()
             .unwrap();
 
         electrsd.wait_tx(&txid);

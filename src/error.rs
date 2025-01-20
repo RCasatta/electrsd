@@ -5,13 +5,10 @@ pub enum Error {
     Io(std::io::Error),
 
     /// Wrapper of bitcoind Error
-    Bitcoind(bitcoind::Error),
+    Bitcoind(corepc_node::Error),
 
     /// Wrapper of electrum_client Error
     ElectrumClient(electrum_client::Error),
-
-    /// Wrapper of bitcoincore_rpc Error
-    BitcoinCoreRpc(bitcoind::bitcoincore_rpc::Error),
 
     /// Wrapper of nix Error
     #[cfg(not(target_os = "windows"))]
@@ -37,8 +34,7 @@ impl std::error::Error for Error {
             Error::Io(e) => Some(e),
             Error::Bitcoind(e) => Some(e),
             Error::ElectrumClient(e) => Some(e),
-            Error::BitcoinCoreRpc(e) => Some(e),
-
+            // Error::BitcoinCoreRpc(e) => Some(e),
             #[cfg(not(target_os = "windows"))]
             Error::Nix(e) => Some(e),
 
@@ -59,8 +55,8 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<bitcoind::Error> for Error {
-    fn from(e: bitcoind::Error) -> Self {
+impl From<corepc_node::Error> for Error {
+    fn from(e: corepc_node::Error) -> Self {
         Error::Bitcoind(e)
     }
 }
@@ -68,12 +64,6 @@ impl From<bitcoind::Error> for Error {
 impl From<electrum_client::Error> for Error {
     fn from(e: electrum_client::Error) -> Self {
         Error::ElectrumClient(e)
-    }
-}
-
-impl From<bitcoind::bitcoincore_rpc::Error> for Error {
-    fn from(e: bitcoind::bitcoincore_rpc::Error) -> Self {
-        Error::BitcoinCoreRpc(e)
     }
 }
 
