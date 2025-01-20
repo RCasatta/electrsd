@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, macos-11]
+        os: [ubuntu-24.04, macos-15]
     env:
       ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
 

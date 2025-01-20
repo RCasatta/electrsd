@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: ["macos-12", "ubuntu-22.04", "windows-2022"]
+        os: ["macos-14", "ubuntu-24.04", "windows-2022"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -44,7 +44,7 @@ jobs:
 
   test-electrs-esplora:
     name: Test Electrs Esplora
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CARGO_TERM_COLOR: always
     strategy:
@@ -59,7 +59,7 @@ jobs:
 
   test-electrs-no-download:
     name: Test Electrs no auto-download features
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CARGO_TERM_COLOR: always
       ELECTRS_EXEC: "/home/runner/.cargo-install/electrs/bin/electrs"
@@ -74,10 +74,10 @@ jobs:
       - name: Checkout Crate
         uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --features 'bitcoind/25_0'
+      - run: cargo test --features 'corepc-node_25_2'
 
   cosmetics:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
