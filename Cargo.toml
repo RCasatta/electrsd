@@ -10,7 +10,7 @@ edition = "2018"
 categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 
 [dependencies]
-corepc-node = { version = "0.5.0" }
+corepc-node = { version = "0.5.0", default-features = false }
 corepc-client = { version = "0.5.0" }
 electrum-client = { version = "0.21.0", default-features = false }
 log = { version = "0.4" }
