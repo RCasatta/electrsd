@@ -23,7 +23,9 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
-// re-export bitcoind
+// re-export corepc_node
+pub use corepc_node;
+// re-export corepc_client
 pub use corepc_client;
 // re-export electrum_client because calling RawClient methods requires the ElectrumApi trait
 pub use electrum_client;
