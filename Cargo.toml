@@ -12,7 +12,7 @@ categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 [dependencies]
 corepc-node = { version = "0.5.0", default-features = false }
 corepc-client = { version = "0.5.0" }
-electrum-client = { version = "0.21.0", default-features = false }
+electrum-client = { version = "0.22.0", default-features = false }
 log = { version = "0.4" }
 which = { version = "4.2.5" }
 
