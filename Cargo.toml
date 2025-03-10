@@ -10,8 +10,8 @@ edition = "2018"
 categories = ["cryptography::cryptocurrencies", "development-tools::testing"]
 
 [dependencies]
-corepc-node = { version = "0.5.0", default-features = false }
-corepc-client = { version = "0.5.0" }
+corepc-node = { version = "0.6.1" }
+corepc-client = { version = "0.6.1" }
 electrum-client = { version = "0.22.0", default-features = false }
 log = { version = "0.4" }
 which = { version = "4.2.5" }
@@ -44,15 +44,15 @@ electrs_0_9_1 = ["download"]
 electrs_0_9_11 = ["download"]
 electrs_0_10_6 = ["download"]
 
-corepc-node_28_0 = ["download", "corepc-node/28_0"]
-corepc-node_27_2 = ["download", "corepc-node/27_2"]
-corepc-node_26_2 = ["download", "corepc-node/26_2"]
-corepc-node_25_2 = ["download", "corepc-node/25_2"]
-corepc-node_24_2 = ["download", "corepc-node/24_2"]
-corepc-node_23_1 = ["download", "corepc-node/23_2"]
-corepc-node_22_1 = ["download", "corepc-node/22_1"]
-corepc-node_0_21_2 = ["download", "corepc-node/0_21_2"]
-corepc-node_0_20_2 = ["download", "corepc-node/0_20_2"]
-corepc-node_0_19_1 = ["download", "corepc-node/0_19_1"]
-corepc-node_0_18_1 = ["download", "corepc-node/0_18_1"]
-corepc-node_0_17_1 = ["download", "corepc-node/0_17_1"]
+corepc-node_28_0 = ["corepc-node/download", "corepc-node/28_0"]
+corepc-node_27_2 = ["corepc-node/download", "corepc-node/27_2"]
+corepc-node_26_2 = ["corepc-node/download", "corepc-node/26_2"]
+corepc-node_25_2 = ["corepc-node/download", "corepc-node/25_2"]
+corepc-node_24_2 = ["corepc-node/download", "corepc-node/24_2"]
+corepc-node_23_1 = ["corepc-node/download", "corepc-node/23_2"]
+corepc-node_22_1 = ["corepc-node/download", "corepc-node/22_1"]
+corepc-node_0_21_2 = ["corepc-node/download", "corepc-node/0_21_2"]
+corepc-node_0_20_2 = ["corepc-node/download", "corepc-node/0_20_2"]
+corepc-node_0_19_1 = ["corepc-node/download", "corepc-node/0_19_1"]
+corepc-node_0_18_1 = ["corepc-node/download", "corepc-node/0_18_1"]
+corepc-node_0_17_1 = ["corepc-node/download", "corepc-node/0_17_1"]
