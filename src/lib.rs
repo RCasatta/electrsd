@@ -12,7 +12,6 @@ mod versions;
 
 use corepc_node::anyhow::Context;
 use corepc_node::get_available_port;
-use corepc_node::serde_json::Value;
 use corepc_node::tempfile::TempDir;
 use corepc_node::{anyhow, Node};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
@@ -158,11 +157,8 @@ impl ElectrsD {
         if ibd {
             // electrum will remain idle until bitcoind is not in IBD
             // bitcoind will remain in IBD if doesn't see a block from a long time, thus adding a block
-            let node_address = bitcoind.client.call::<Value>("getnewaddress", &[])?;
-            bitcoind
-                .client
-                .call::<Value>("generatetoaddress", &[1.into(), node_address])
-                .unwrap();
+            let node_address = bitcoind.client.new_address()?;
+            bitcoind.client.generate_to_address(1, &node_address)?;
         }
 
         let mut args = conf.args.clone();
