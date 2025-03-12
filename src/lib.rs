@@ -159,7 +159,7 @@ impl ElectrsD {
             .and_then(|v| v.as_bool())
             .unwrap_or(false)
         {
-            // electrum will remain idle until bitcoind is in IBD
+            // electrum will remain idle until bitcoind is not in IBD
             // bitcoind will remain in IBD if doesn't see a block from a long time, thus adding a block
             let node_address = bitcoind.client.call::<Value>("getnewaddress", &[])?;
             bitcoind
