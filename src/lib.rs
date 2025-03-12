@@ -153,12 +153,9 @@ impl ElectrsD {
         bitcoind: &Node,
         conf: &Conf,
     ) -> anyhow::Result<ElectrsD> {
-        let response = bitcoind.client.call::<Value>("getblockchaininfo", &[])?;
-        if response
-            .get("initialblockdownload")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false)
-        {
+        let json = bitcoind.client.get_blockchain_info()?;
+        let ibd = json.into_model()?.initial_block_download;
+        if ibd {
             // electrum will remain idle until bitcoind is not in IBD
             // bitcoind will remain in IBD if doesn't see a block from a long time, thus adding a block
             let node_address = bitcoind.client.call::<Value>("getnewaddress", &[])?;
