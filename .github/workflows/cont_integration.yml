@@ -19,6 +19,26 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build
 
+  corepc-node-versions:
+    name: Test a bunch of corepc-node versions.
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_LOG: debug
+    strategy:
+      matrix:
+        features:
+          - corepc-node_27_2,electrs_0_10_6
+          - corepc-node_26_2,electrs_0_10_6
+          - corepc-node_25_2,electrs_0_10_6
+          - corepc-node_24_2,electrs_0_10_6
+          - corepc-node_23_1,electrs_0_10_6
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --features ${{ matrix.features }}
 
   test-electrs:
     name: Test Electrs
