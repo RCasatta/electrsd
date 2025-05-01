@@ -17,11 +17,13 @@ use corepc_node::tempfile::TempDir;
 use corepc_node::{anyhow, Node};
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
 use log::{debug, error, warn};
-use std::env;
 use std::ffi::OsStr;
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
+use std::{env, thread};
 
 // re-export corepc_node
 pub use corepc_node;
@@ -54,6 +56,10 @@ pub struct Conf<'a> {
 
     /// if `true` electrsd log output will not be suppressed
     pub view_stderr: bool,
+
+    /// if true, logs (stdout + stderr) are redirected to ElectrsD.logs
+    /// note: this feature will take precedence over `view_stderr`
+    pub buffered_logs: bool,
 
     /// if `true` electrsd exposes an esplora endpoint
     pub http_enabled: bool,
@@ -104,6 +110,7 @@ impl Default for Conf<'_> {
             tmpdir: None,
             staticdir: None,
             attempts: 3,
+            buffered_logs: false,
         }
     }
 }
@@ -120,6 +127,8 @@ pub struct ElectrsD {
     pub electrum_url: String,
     /// Url to connect to esplora protocol (http)
     pub esplora_url: Option<String>,
+    /// A buffer receiving stdout and stderr
+    pub logs: Receiver<String>,
 }
 
 /// The DataDir struct defining the kind of data directory electrs will use.
@@ -251,18 +260,42 @@ impl ElectrsD {
             None
         };
 
-        let view_stderr = if conf.view_stderr {
-            Stdio::inherit()
+        let (stderr, stdout) = if conf.buffered_logs {
+            (Stdio::piped(), Stdio::piped())
+        } else if conf.view_stderr {
+            (Stdio::inherit(), Stdio::null())
         } else {
-            Stdio::null()
+            (Stdio::null(), Stdio::null())
         };
 
         debug!("args: {:?}", args);
         let mut process = Command::new(&exe)
             .args(args)
-            .stderr(view_stderr)
+            .stderr(stderr)
+            .stdout(stdout)
             .spawn()
             .with_context(|| format!("Error while executing {:?}", exe.as_ref()))?;
+
+        let (sender, logs) = mpsc::channel();
+        let stdout = process.stdout.take().unwrap();
+        let stderr = process.stderr.take().unwrap();
+
+        if conf.buffered_logs {
+            let s = sender.clone();
+            thread::spawn(move || {
+                let reader = BufReader::new(stdout);
+                for line in reader.lines() {
+                    s.send(line.unwrap());
+                }
+            });
+
+            thread::spawn(move || {
+                let reader = BufReader::new(stderr);
+                for line in reader.lines() {
+                    sender.send(line.unwrap());
+                }
+            });
+        }
 
         let client = loop {
             if let Some(status) = process.try_wait()? {
@@ -289,6 +322,7 @@ impl ElectrsD {
             work_dir,
             electrum_url,
             esplora_url,
+            logs,
         })
     }
 
@@ -324,6 +358,11 @@ impl ElectrsD {
             }
             DataDir::Temporary(_) => Ok(self.process.kill()?),
         }
+    }
+
+    /// clear the log buffer
+    pub fn clear_logs(&mut self) {
+        while self.logs.try_recv().is_ok() {}
     }
 
     #[cfg(not(target_os = "windows"))]
