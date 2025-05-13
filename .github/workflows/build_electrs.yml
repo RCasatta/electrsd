@@ -57,3 +57,32 @@ jobs:
         with:
           name: electrs_${{ env.RUNNER_OS_LOWER }}_esplora_${{ env.ELECTRS_COMMIT }}
           path: target/release/electrs
+
+  build-electrs-esplora-pr108:
+    name: Build Electrs Esplora PR108
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    env:
+      ELECTRS_COMMIT: "d036fb8f327d6676f3160da1ec140a4f8aee8940"
+
+    steps:
+      - name: Check out Electrs (PR108)
+        uses: actions/checkout@master
+        with:
+          repository: Blockstream/electrs
+          ref: ${{ env.ELECTRS_COMMIT }}
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: downcase runner.os
+        run: |
+          echo ${{ runner.os }} \
+            | tr '[:upper:]' '[:lower:]' \
+            | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
+      - name: Upload libs for Esplora PR108
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrs_${{ env.RUNNER_OS_LOWER }}_esplora_${{ env.ELECTRS_COMMIT }}
+          path: target/release/electrs
