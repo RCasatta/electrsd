@@ -89,6 +89,7 @@ impl Default for Conf<'_> {
         let args = if cfg!(feature = "electrs_0_9_1")
             || cfg!(feature = "electrs_0_8_10")
             || cfg!(feature = "esplora_a33e97e1")
+            || cfg!(feature = "esplora_d036fb8f")
             || cfg!(feature = "legacy")
         {
             vec!["-vvv"]
@@ -218,6 +219,7 @@ impl ElectrsD {
         let p2p_socket;
         if cfg!(feature = "electrs_0_8_10")
             || cfg!(feature = "esplora_a33e97e1")
+            || cfg!(feature = "esplora_d036fb8f")
             || cfg!(feature = "legacy")
         {
             args.push("--jsonrpc-import");
@@ -444,7 +446,10 @@ mod test {
         debug!("electrs: {}", &electrs_exe);
         let mut conf = corepc_node::Conf::default();
         conf.view_stdout = log_enabled!(Level::Debug);
-        if !cfg!(feature = "electrs_0_8_10") && !cfg!(feature = "esplora_a33e97e1") {
+        if !cfg!(feature = "electrs_0_8_10")
+            && !cfg!(feature = "esplora_a33e97e1")
+            && !cfg!(feature = "esplora_d036fb8f")
+        {
             conf.p2p = P2P::Yes;
         }
         let bitcoind = corepc_node::Node::with_conf(&bitcoind_exe, &conf).unwrap();
