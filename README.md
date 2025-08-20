@@ -69,7 +69,9 @@ I used integration testing based on external bash script launching needed extern
     * [electrs 0.9.11](https://github.com/romanz/electrs/releases/tag/v0.9.11) (feature=electrs_0_9_11)
     * [electrs 0.9.1](https://github.com/romanz/electrs/releases/tag/v0.9.1) (feature=electrs_0_9_1)
     * [electrs 0.8.10](https://github.com/romanz/electrs/releases/tag/v0.8.10) (feature=electrs_0_8_10)
-    * [electrs esplora](https://github.com/Blockstream/electrs/tree/a33e97e1a1fc63fa9c20a116bb92579bbf43b254) (feature=esplora_a33e97e1)
+    * [esplora a33e97e1](https://github.com/Blockstream/electrs/tree/a33e97e1a1fc63fa9c20a116bb92579bbf43b254) (feature=esplora_a33e97e1)
+    * [esplora d036fb8f](https://github.com/Blockstream/electrs/tree/d036fb8f327d6676f3160da1ec140a4f8aee8940)
+    (feature=esplora_d036fb8f)
 
 Thanks to these features every `#[test]` could easily run isolated with its own environment
 

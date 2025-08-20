@@ -69,7 +69,9 @@ jobs:
       CARGO_TERM_COLOR: always
     strategy:
       matrix:
-        features: ["corepc-node_22_1,legacy,esplora_a33e97e1"]
+        features: 
+          - corepc-node_22_1,legacy,esplora_a33e97e1
+          - corepc-node_22_1,legacy,esplora_d036fb8f
 
     steps:
       - uses: actions/checkout@v3
