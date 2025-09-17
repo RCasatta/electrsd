@@ -28,6 +28,8 @@ jobs:
     strategy:
       matrix:
         features:
+          - corepc-node_29_0,electrs_0_10_6
+          - corepc-node_28_1,electrs_0_10_6
           - corepc-node_27_2,electrs_0_10_6
           - corepc-node_26_2,electrs_0_10_6
           - corepc-node_25_2,electrs_0_10_6
