@@ -7,10 +7,16 @@ Utility to run a regtest [electrs](https://github.com/romanz/electrs/) process c
 useful in integration testing environment.
 
 ```rust
-let bitcoind = bitcoind::BitcoinD::new("/usr/local/bin/bitcoind").unwrap();
-let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrs", bitcoind).unwrap();
-let header = electrsd.client.block_headers_subscribe().unwrap();
-assert_eq!(header.height, 0);
+let bitcoind_path = "/usr/local/bin/bitcoind";
+if std::path::Path::new(&bitcoind_path).exists() {
+  use crate::electrsd::electrum_client::ElectrumApi;
+  let mut bitcoind_conf = electrsd::corepc_node::Conf::default();
+  bitcoind_conf.p2p = electrsd::corepc_node::P2P::Yes;
+  let bitcoind = corepc_node::Node::with_conf(bitcoind_path, &bitcoind_conf).unwrap();
+  let electrsd = electrsd::ElectrsD::new("/usr/local/bin/electrs", &bitcoind).unwrap();
+  let header = electrsd.client.block_headers_subscribe_raw().unwrap();
+  assert_eq!(header.height, 0);
+}
 ```
 
 ## Automatic binaries download
@@ -18,16 +24,20 @@ assert_eq!(header.height, 0);
 In your project Cargo.toml, activate the following features
 
 ```yml
-electrsd = { version= "0.23", features = ["corepc-node_23_1", "electrs_0_9_1"] }
+electrsd = { version= "0.36", features = ["corepc-node_23_1", "electrs_0_9_1"] }
 ```
 
 Then use it:
 
 ```rust
-let bitcoind_exe = bitcoind::downloaded_exe_path().expect("bitcoind version feature must be enabled");
-let bitcoind = bitcoind::BitcoinD::new(bitcoind_exe).unwrap();
-let electrs_exe = electrsd::downloaded_exe_path().expect("electrs version feature must be enabled");
-let electrsd = electrsd::ElectrsD::new(electrs_exe, bitcoind).unwrap();
+if let Ok(bitcoind_exe) = corepc_node::downloaded_exe_path() {
+  let mut bitcoind_conf = electrsd::corepc_node::Conf::default();
+  bitcoind_conf.p2p = electrsd::corepc_node::P2P::Yes;
+  let bitcoind = corepc_node::Node::with_conf(bitcoind_exe, &bitcoind_conf).unwrap();
+  if let Some(electrs_exe) = electrsd::downloaded_exe_path() {
+    let electrsd = electrsd::ElectrsD::new(electrs_exe, &bitcoind).unwrap();
+  }
+}
 ```
 
 When the `ELECTRSD_DOWNLOAD_ENDPOINT`/`BITCOIND_DOWNLOAD_ENDPOINT` environment variables are set,
@@ -39,8 +49,13 @@ When you don't use the auto-download feature you have the following options:
 - provide the `electrs` executable via the `ELECTRS_EXEC` env var
 
 ```rust
-if let Ok(exe_path) = electrsd::exe_path() {
-  let electrsd = electrsd::electrsD::new(exe_path).unwrap();
+if let Ok(bitcoind_path) = corepc_node::exe_path() {
+  let mut bitcoind_conf = electrsd::corepc_node::Conf::default();
+  bitcoind_conf.p2p = electrsd::corepc_node::P2P::Yes;
+  let bitcoind = corepc_node::Node::with_conf(bitcoind_path, &bitcoind_conf).unwrap();
+  if let Ok(exe_path) = electrsd::exe_path() {
+    let electrsd = electrsd::ElectrsD::new(exe_path, &bitcoind).unwrap();
+  }
 }
 ```
 

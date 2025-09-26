@@ -383,6 +383,13 @@ pub fn exe_path() -> anyhow::Result<String> {
         .map(|p| p.display().to_string())
 }
 
+// Test the code in the readme
+#[doc = include_str!("../README.md")]
+#[allow(dead_code)]
+fn readme() {
+    // dummy function
+}
+
 #[cfg(test)]
 mod test {
     use crate::exe_path;
