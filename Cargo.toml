@@ -14,7 +14,6 @@ corepc-node = { version = "0.10.0" }
 corepc-client = { version = "0.10.0" }
 electrum-client = { version = "0.24.0", default-features = false }
 log = { version = "0.4" }
-which = { version = "4.2.5" }
 
 [target.'cfg(not(windows))'.dependencies]
 nix = { version = "0.25.0" }

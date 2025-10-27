@@ -31,7 +31,6 @@ pub use corepc_client;
 pub use electrum_client;
 
 pub use error::Error;
-pub use which;
 
 /// Electrs configuration parameters, implements a convenient [Default] for most common use.
 ///
@@ -378,9 +377,45 @@ pub fn exe_path() -> anyhow::Result<String> {
     if let Some(path) = downloaded_exe_path() {
         return Ok(path);
     }
-    which::which("electrs")
-        .map_err(|_| Error::NoElectrsExecutableFound.into())
-        .map(|p| p.display().to_string())
+    // Manually search for electrs in PATH
+    let path_var = env::var("PATH").map_err(|_| Error::NoElectrsExecutableFound)?;
+
+    #[cfg(target_os = "windows")]
+    let path_separator = ';';
+    #[cfg(not(target_os = "windows"))]
+    let path_separator = ':';
+
+    for path_dir in path_var.split(path_separator) {
+        let mut candidate = PathBuf::from(path_dir);
+        candidate.push("electrs");
+
+        #[cfg(target_os = "windows")]
+        {
+            // On Windows, try with .exe extension
+            candidate.set_extension("exe");
+        }
+
+        if candidate.is_file() {
+            // Check if the file is executable
+            #[cfg(not(target_os = "windows"))]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Ok(metadata) = std::fs::metadata(&candidate) {
+                    let permissions = metadata.permissions();
+                    if permissions.mode() & 0o111 != 0 {
+                        return Ok(candidate.display().to_string());
+                    }
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                return Ok(candidate.display().to_string());
+            }
+        }
+    }
+
+    Err(Error::NoElectrsExecutableFound.into())
 }
 
 #[cfg(test)]
