@@ -40,7 +40,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14]
     env:
-      ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
+      ELECTRS_COMMIT: "027e38d3ebc2f85b28ae76f8f3448438ee4fc7b1"
       RUST_VERSION: "1.75.0"
 
     steps:
