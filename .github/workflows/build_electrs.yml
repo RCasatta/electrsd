@@ -49,6 +49,12 @@ jobs:
           repository: Blockstream/electrs
           ref: ${{ env.ELECTRS_COMMIT }}
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install LLVM (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - name: Install LLVM (macOS)
+        if: runner.os == 'macOS'
+        run: brew install llvm
       - run: cargo build --release
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
