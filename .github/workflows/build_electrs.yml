@@ -55,12 +55,11 @@ jobs:
       - name: Install LLVM (Ubuntu)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
-      - name: Install LLVM (macOS)
+      - name: Set up build environment (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install llvm@17
-          echo "/opt/homebrew/opt/llvm@17/bin" >> $GITHUB_PATH
-          echo "LLVM_CONFIG_PATH=/opt/homebrew/opt/llvm@17/bin/llvm-config" >> $GITHUB_ENV
+          echo "LIBCLANG_PATH=$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-isysroot $(xcrun --show-sdk-path)" >> $GITHUB_ENV
       - run: cargo build --release --locked
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
