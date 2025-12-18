@@ -38,9 +38,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-14]
+        os: [ubuntu-22.04, macos-14]
     env:
       ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
+      RUST_VERSION: "1.75.0"
 
     steps:
       - name: Check out Electrs
@@ -48,14 +49,16 @@ jobs:
         with:
           repository: Blockstream/electrs
           ref: ${{ env.ELECTRS_COMMIT }}
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
       - name: Install LLVM (Ubuntu)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
       - name: Install LLVM (macOS)
         if: runner.os == 'macOS'
         run: brew install llvm
-      - run: cargo build --release
+      - run: cargo build --release --locked
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
