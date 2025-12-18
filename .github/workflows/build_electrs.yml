@@ -60,7 +60,7 @@ jobs:
         run: |
           echo "LIBCLANG_PATH=$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-isysroot $(xcrun --show-sdk-path)" >> $GITHUB_ENV
-      - run: cargo build --release --locked
+      - run: cargo build --release --locked --features liquid
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
