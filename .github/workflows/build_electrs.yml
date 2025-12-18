@@ -53,7 +53,7 @@ jobs:
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: electrs_${{ env.RUNNER_OS_LOWER }}_esplora_${{ env.ELECTRS_COMMIT }}
           path: target/release/electrs
