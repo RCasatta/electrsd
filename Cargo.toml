@@ -38,6 +38,7 @@ legacy = []
 download = ["bitcoin_hashes", "zip", "minreq"]
 
 esplora_a33e97e1 = ["download", "legacy"]
+esplora_ee3646fc = ["download", "legacy"] # commit: ee3646fc4a6a3f407fae3cf726c31c3230cddc52
 electrs_0_8_10 = ["download"]
 electrs_0_9_1 = ["download"]
 electrs_0_9_11 = ["download"]
