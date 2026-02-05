@@ -28,13 +28,13 @@ jobs:
     strategy:
       matrix:
         features:
-          - corepc-node_29_0,electrs_0_10_6
-          - corepc-node_28_2,electrs_0_10_6
-          - corepc-node_27_2,electrs_0_10_6
-          - corepc-node_26_2,electrs_0_10_6
-          - corepc-node_25_2,electrs_0_10_6
-          - corepc-node_24_2,electrs_0_10_6
-          - corepc-node_23_1,electrs_0_10_6
+          - corepc-node_29_0,corepc_download,electrs_0_10_6
+          - corepc-node_28_2,corepc_download,electrs_0_10_6
+          - corepc-node_27_2,corepc_download,electrs_0_10_6
+          - corepc-node_26_2,corepc_download,electrs_0_10_6
+          - corepc-node_25_2,corepc_download,electrs_0_10_6
+          - corepc-node_24_2,corepc_download,electrs_0_10_6
+          - corepc-node_23_1,corepc_download,electrs_0_10_6
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -51,10 +51,10 @@ jobs:
     strategy:
       matrix:
         features:
-          - corepc-node_22_1,electrs_0_8_10
-          - corepc-node_22_1,electrs_0_9_1
-          - corepc-node_22_1,electrs_0_9_11
-          - corepc-node_22_1,electrs_0_10_6
+          - corepc-node_22_1,corepc_download,electrs_0_8_10
+          - corepc-node_22_1,corepc_download,electrs_0_9_1
+          - corepc-node_22_1,corepc_download,electrs_0_9_11
+          - corepc-node_22_1,corepc_download,electrs_0_10_6
       fail-fast: false
 
     steps:
@@ -71,7 +71,7 @@ jobs:
       CARGO_TERM_COLOR: always
     strategy:
       matrix:
-        features: ["corepc-node_22_1,legacy,esplora_a33e97e1"]
+        features: ["corepc-node_22_1,corepc_download,legacy,esplora_a33e97e1"]
 
     steps:
       - uses: actions/checkout@v3
@@ -87,6 +87,8 @@ jobs:
       ELECTRS_EXEC: "/home/runner/.cargo-install/electrs/bin/electrs"
     steps:
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install xmllint
+        run: sudo apt install -y clang libclang-dev llvm
       - name: Install electrs
         # Automatically cache installed binaries to avoid compiling them each run
         uses: baptiste0928/cargo-install@v2
@@ -96,7 +98,7 @@ jobs:
       - name: Checkout Crate
         uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --features 'corepc-node_25_2'
+      - run: cargo test --features 'corepc-node_25_2,corepc_download'
 
   cosmetics:
     runs-on: ubuntu-24.04
