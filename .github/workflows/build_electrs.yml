@@ -38,9 +38,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15]
+        os: [ubuntu-22.04, macos-14]
     env:
-      ELECTRS_COMMIT: "a33e97e1a1fc63fa9c20a116bb92579bbf43b254"
+      ELECTRS_COMMIT: "027e38d3ebc2f85b28ae76f8f3448438ee4fc7b1"
+      RUST_VERSION: "1.75.0"
 
     steps:
       - name: Check out Electrs
@@ -48,8 +49,18 @@ jobs:
         with:
           repository: Blockstream/electrs
           ref: ${{ env.ELECTRS_COMMIT }}
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --release
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - name: Install LLVM (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - name: Set up build environment (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "LIBCLANG_PATH=$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-isysroot $(xcrun --show-sdk-path)" >> $GITHUB_ENV
+      - run: cargo build --release --locked --features liquid
       - name: downcase runner.os
         run: echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]' | echo RUNNER_OS_LOWER=$(</dev/stdin) >>${GITHUB_ENV}
       - name: Upload libs
