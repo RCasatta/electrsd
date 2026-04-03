@@ -87,6 +87,10 @@ jobs:
       ELECTRS_EXEC: "/home/runner/.cargo-install/electrs/bin/electrs"
     steps:
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install LLVM/Clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libclang-dev llvm-dev
       - name: Install electrs
         # Automatically cache installed binaries to avoid compiling them each run
         uses: baptiste0928/cargo-install@v2
